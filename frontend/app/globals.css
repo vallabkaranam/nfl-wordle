@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-brand-green: #6aaa64;
+  --color-brand-yellow: #c9b458;
+  --color-brand-gray: #3a3a3c;
+  --color-background: #09090b; /* zinc-950 */
+  --color-foreground: #ffffff;
+}
+
+:root {
+  --background: #09090b;
+  --foreground: #ffffff;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  @apply antialiased;
+}
