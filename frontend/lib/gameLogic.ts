@@ -32,9 +32,13 @@ export async function getDailyPlayer(): Promise<Player | null> {
   }
 }
 
-export async function getAllPlayers(): Promise<Player[]> {
+export async function getAllPlayers(offenseOnly: boolean = false): Promise<Player[]> {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/players`);
+    const url = new URL(`${BACKEND_URL}/api/players`);
+    if (offenseOnly) {
+      url.searchParams.set('offense_only', 'true');
+    }
+    const res = await fetch(url.toString());
     if (!res.ok) throw new Error('Failed to fetch players');
     return res.json();
   } catch (err) {

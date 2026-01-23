@@ -10,9 +10,11 @@ interface SearchProps {
   players: Player[];
   onGuess: (player: Player) => void;
   disabled?: boolean;
+  onFilterChange: (offenseOnly: boolean) => void;
+  offenseOnly: boolean;
 }
 
-export default function Search({ players, onGuess, disabled }: SearchProps) {
+export default function Search({ players, onGuess, disabled, onFilterChange, offenseOnly }: SearchProps) {
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
 
@@ -36,6 +38,23 @@ export default function Search({ players, onGuess, disabled }: SearchProps) {
 
   return (
     <div className="relative w-full max-w-lg mx-auto mb-8 z-50">
+      <div className="flex items-center justify-between mb-2 px-1">
+         <p className="text-xs text-zinc-500 uppercase font-bold tracking-wider">Search Player</p>
+         <label className="flex items-center cursor-pointer gap-2">
+            <span className="text-xs text-zinc-400 font-bold uppercase">Offense Only</span>
+            <div className="relative">
+              <input 
+                type="checkbox" 
+                className="sr-only" 
+                checked={offenseOnly}
+                onChange={(e) => onFilterChange(e.target.checked)}
+              />
+              <div className={cn("block w-10 h-6 rounded-full transition-colors", offenseOnly ? "bg-brand-green" : "bg-zinc-700")}></div>
+              <div className={cn("dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform", offenseOnly ? "transform translate-x-4" : "")}></div>
+            </div>
+         </label>
+      </div>
+
       <div className="relative">
         <input
           type="text"
