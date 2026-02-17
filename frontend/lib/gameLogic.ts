@@ -24,9 +24,13 @@ export interface GuessResult {
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-export async function getDailyPlayer(): Promise<Player | null> {
+export async function getDailyPlayer(offenseOnly: boolean = false): Promise<Player | null> {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/daily`, { cache: 'no-store' });
+    const url = new URL(`${BACKEND_URL}/api/daily`);
+    if (offenseOnly) {
+      url.searchParams.set('offense_only', 'true');
+    }
+    const res = await fetch(url.toString(), { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch daily player');
     return res.json();
   } catch (err) {

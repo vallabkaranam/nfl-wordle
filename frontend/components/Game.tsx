@@ -8,17 +8,21 @@ import { cn } from "../lib/utils";
 import Search from "./Search";
 
 interface GameProps {
-  dailyPlayer: Player;
+  standardDaily: Player;
+  offenseDaily: Player;
   allPlayers: Player[]; 
 }
 
-export default function Game({ dailyPlayer, allPlayers: initialPlayers }: GameProps) {
+export default function Game({ standardDaily, offenseDaily, allPlayers: initialPlayers }: GameProps) {
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   const [gameStatus, setGameStatus] = useState<"playing" | "won" | "lost">("playing");
   
   // V2: Offense Only Filter
   const [offenseOnly, setOffenseOnly] = useState(false);
   const [displayedPlayers, setDisplayedPlayers] = useState<Player[]>(initialPlayers);
+
+  // Active Target Logic
+  const activeTarget = offenseOnly ? offenseDaily : standardDaily;
 
   // Help Modal State
   const [showHelp, setShowHelp] = useState(false);
@@ -40,7 +44,7 @@ export default function Game({ dailyPlayer, allPlayers: initialPlayers }: GamePr
   const handleGuess = (player: Player) => {
     if (gameStatus !== "playing") return;
 
-    const result = checkGuess(dailyPlayer, player);
+    const result = checkGuess(activeTarget, player);
     const newGuesses = [...guesses, result]; // Append new guess (Top to Bottom order)
     setGuesses(newGuesses);
 
@@ -177,14 +181,14 @@ export default function Game({ dailyPlayer, allPlayers: initialPlayers }: GamePr
             <div className="relative z-10">
                 <h2 className="text-6xl font-black text-brand-green mb-6 tracking-tighter italic transform -skew-x-6 drop-shadow-lg">TOUCHDOWN!</h2>
                 <div className="relative inline-block mb-6">
-                    <img src={dailyPlayer.headshot} alt={dailyPlayer.name} className="w-32 h-32 rounded-full border-4 border-brand-green bg-zinc-950 shadow-xl object-cover relative z-10" />
+                    <img src={activeTarget.headshot} alt={activeTarget.name} className="w-32 h-32 rounded-full border-4 border-brand-green bg-zinc-950 shadow-xl object-cover relative z-10" />
                     <div className="absolute inset-0 rounded-full bg-brand-green blur-md opacity-50"></div>
                 </div>
-                <p className="text-3xl font-black text-white mb-1 uppercase">{dailyPlayer.name}</p>
+                <p className="text-3xl font-black text-white mb-1 uppercase">{activeTarget.name}</p>
                 <div className="flex justify-center gap-2 mb-8">
-                    <span className="px-2 py-1 bg-zinc-800 rounded text-xs font-bold text-zinc-400">{dailyPlayer.team}</span>
-                    <span className="px-2 py-1 bg-zinc-800 rounded text-xs font-bold text-zinc-400">#{dailyPlayer.jersey_number}</span>
-                    <span className="px-2 py-1 bg-zinc-800 rounded text-xs font-bold text-zinc-400">{dailyPlayer.position}</span>
+                    <span className="px-2 py-1 bg-zinc-800 rounded text-xs font-bold text-zinc-400">{activeTarget.team}</span>
+                    <span className="px-2 py-1 bg-zinc-800 rounded text-xs font-bold text-zinc-400">#{activeTarget.jersey_number}</span>
+                    <span className="px-2 py-1 bg-zinc-800 rounded text-xs font-bold text-zinc-400">{activeTarget.position}</span>
                 </div>
                 <button onClick={() => window.location.reload()} className="w-full bg-brand-green text-black font-black uppercase tracking-widest py-4 rounded-xl hover:bg-green-400 hover:scale-105 transition-all shadow-lg hover:shadow-brand-green/30">
                     Play Again
@@ -204,8 +208,8 @@ export default function Game({ dailyPlayer, allPlayers: initialPlayers }: GamePr
             <h2 className="text-4xl font-black text-red-600 mb-8 tracking-tighter uppercase italic">Turnover<br/>on Downs</h2>
             <div className="mb-8 p-4 bg-zinc-950/50 rounded-xl border border-zinc-800">
                  <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-4">The Player Was</p>
-                 <img src={dailyPlayer.headshot} alt={dailyPlayer.name} className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-zinc-700 bg-zinc-800 grayscale" />
-                 <p className="text-2xl font-black text-white uppercase">{dailyPlayer.name}</p>
+                 <img src={activeTarget.headshot} alt={activeTarget.name} className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-zinc-700 bg-zinc-800 grayscale" />
+                 <p className="text-2xl font-black text-white uppercase">{activeTarget.name}</p>
             </div>
             <button onClick={() => window.location.reload()} className="w-full bg-zinc-800 text-white font-bold uppercase tracking-widest py-4 rounded-xl hover:bg-zinc-700 transition-all border border-zinc-700">
                 Try Again

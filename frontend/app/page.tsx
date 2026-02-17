@@ -4,10 +4,13 @@ import { getAllPlayers, getDailyPlayer } from "../lib/gameLogic";
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const dailyPlayer = await getDailyPlayer();
-  const allPlayers = await getAllPlayers();
+  const [standardDaily, offenseDaily, allPlayers] = await Promise.all([
+    getDailyPlayer(false),
+    getDailyPlayer(true),
+    getAllPlayers()
+  ]);
 
-  if (!dailyPlayer) {
+  if (!standardDaily || !offenseDaily) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
         <div className="text-center">
@@ -21,7 +24,7 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-zinc-950">
-      <Game dailyPlayer={dailyPlayer} allPlayers={allPlayers} />
+      <Game standardDaily={standardDaily} offenseDaily={offenseDaily} allPlayers={allPlayers} />
     </main>
   );
 }
