@@ -5,6 +5,8 @@ import pandas as pd
 from datetime import date
 import random
 import os
+import json
+from pathlib import Path
 
 app = FastAPI()
 
@@ -57,11 +59,28 @@ TEAM_MAP = {
     'WAS': {'conf': 'NFC', 'div': 'East'},
 }
 
+
+DATA_DIR = Path("data")
+CACHE_FILE = DATA_DIR / "players.json"
+
 @app.on_event("startup")
 def load_data():
     global players_db
-    print("Loading NFL 2025 roster data...")
-    # Load 2025 rosters
+    print("Loading NFL roster data...")
+
+    # 1. Try Loading from Cache
+    if CACHE_FILE.exists():
+        try:
+            print(f"Loading from cache: {CACHE_FILE}")
+            with open(CACHE_FILE, "r") as f:
+                players_db = json.load(f)
+            print(f"Loaded {len(players_db)} players from cache.")
+            return
+        except Exception as e:
+            print(f"Error reading cache: {e}. Falling back to fetch.")
+
+    # 2. Fetch if no cache
+    print("Cache miss. Fetching from nflreadpy...")
     try:
         # User requested 2025 primarily
         df = nfl.load_rosters([2025])
@@ -120,7 +139,16 @@ def load_data():
             })
             
     players_db = cleaned_players
-    print(f"Loaded {len(players_db)} players.")
+    print(f"Loaded {len(players_db)} players from API.")
+
+    # 3. Save to Cache
+    try:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        with open(CACHE_FILE, "w") as f:
+            json.dump(players_db, f)
+        print(f"Saved cache to {CACHE_FILE}")
+    except Exception as e:
+        print(f"Failed to save cache: {e}")
 
 @app.get("/api/players")
 def get_players(offense_only: bool = False):
