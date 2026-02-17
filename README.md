@@ -61,8 +61,9 @@ Local development works out-of-the-box with default fallbacks.
 
 ## ☁️ Deployment
 
-This project is optimized for deployment on **Render**.
-See [DEPLOY.md](./DEPLOY.md) for a step-by-step guide.
+This project involves two separate services. See [deployment guide](./documentation/DEPLOY.md) for detailed instructions on deploying to Render.
+
+**Live Demo:** [https://nfl-wordle-frontend.onrender.com](https://nfl-wordle-frontend.onrender.com)
 
 ## 📜 License
 MIT

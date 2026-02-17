@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import nflreadpy as nfl
+import nfl_data_py as nfl
 import pandas as pd
 from datetime import date
 import random
@@ -83,10 +83,10 @@ def load_data():
     print("Cache miss. Fetching from nflreadpy...")
     try:
         # User requested 2025 primarily
-        df = nfl.load_rosters([2025])
+        df = nfl.import_rosters([2025])
     except Exception as e:
         print(f"Error loading 2025 data, falling back to 2024 for dev if 2025 unavailable: {e}")
-        df = nfl.load_rosters([2024])
+        df = nfl.import_rosters([2024])
     
     print(f"Data Loaded. Type: {type(df)}")
     
