@@ -209,7 +209,12 @@ export default function Game({ standardDaily, offenseDaily, allPlayers: initialP
             <div className="mb-8 p-4 bg-zinc-950/50 rounded-xl border border-zinc-800">
                  <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-4">The Player Was</p>
                  <img src={activeTarget.headshot} alt={activeTarget.name} className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-zinc-700 bg-zinc-800 grayscale" />
-                 <p className="text-2xl font-black text-white uppercase">{activeTarget.name}</p>
+                 <p className="text-2xl font-black text-white uppercase mb-4">{activeTarget.name}</p>
+                 <div className="flex justify-center gap-2">
+                    <span className="px-2 py-1 bg-zinc-900 rounded text-xs font-bold text-zinc-400 border border-zinc-700">{activeTarget.team}</span>
+                    <span className="px-2 py-1 bg-zinc-900 rounded text-xs font-bold text-zinc-400 border border-zinc-700">#{activeTarget.jersey_number}</span>
+                    <span className="px-2 py-1 bg-zinc-900 rounded text-xs font-bold text-zinc-400 border border-zinc-700">{activeTarget.position}</span>
+                </div>
             </div>
             <button onClick={() => window.location.reload()} className="w-full bg-zinc-800 text-white font-bold uppercase tracking-widest py-4 rounded-xl hover:bg-zinc-700 transition-all border border-zinc-700">
                 Try Again
