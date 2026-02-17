@@ -222,8 +222,8 @@ function Tile({ status, value, arrow }: { status: string; value: string; arrow?:
     const getColor = (s: string) => {
         if (s === 'correct') return 'bg-brand-green border-brand-green text-black';
         if (s === 'close') return 'bg-brand-yellow border-brand-yellow text-black'; // Not really used in NFL Wordle context usually? but partial matches exist
-        if (s === 'wrong') return 'bg-zinc-900 border-zinc-700 text-white'; // Dark default
-        return 'bg-zinc-800'; 
+        if (s === 'incorrect' || s === 'higher' || s === 'lower') return 'bg-zinc-900 border-zinc-700 text-white'; 
+        return 'bg-zinc-800 border-zinc-800 text-zinc-500'; // Fallback for unknown states 
     };
 
     return (
