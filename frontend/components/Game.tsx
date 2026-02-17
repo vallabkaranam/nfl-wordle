@@ -237,7 +237,7 @@ function Tile({ status, value, arrow }: { status: string; value: string; arrow?:
         )}>
             <span className="z-10 relative">{value}</span>
             {arrow && (
-                <span className="absolute bottom-[-6px] right-0.5 text-2xl leading-none text-white drop-shadow-md font-black pointer-events-none">{arrow}</span>
+                <span className="absolute bottom-0 right-0.5 text-2xl leading-none text-white drop-shadow-md font-black pointer-events-none">{arrow}</span>
             )}
             {/* Glass shine effect */}
             <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>

@@ -1,6 +1,7 @@
 # Deployment Guide (Render)
 
 This project is separated into two services: `frontend` (Next.js) and `backend` (FastAPI). Before deploying, ensure you have forked or pushed this repository to GitHub.
+If data fails to load initially, simply **refresh the page** after ~30 seconds.
 
 ## 1. Deploy the Backend (FastAPI)
 
@@ -40,7 +41,8 @@ Once deployed, copy the **onrender.com URL** (e.g., `https://nfl-wordle-backend.
 2.  Update the `CORS_ORIGINS` environment variable to match your new **Frontend URL** (e.g., `https://nfl-wordle-frontend.onrender.com`).
 3.  Save changes. The backend will redeploy automatically.
 
-## Notes
+## Notes & Cold Start
 
-- **Data Loading:** The backend fetches NFL roster data on startup. The first deployment may take ~10-30 seconds to become healthy as it downloads and processes data. Subsequent restarts will be faster if the instance persists the cache (Render Free Tier does *not* persist disk across restarts, so it may fetch again on each deploy/restart).
+- **Data Loading:** The backend fetches NFL roster data on startup. The first deployment may take ~10-30 seconds to become healthy as it downloads and processes data. 
+- **Free Tier Limits:** Render Free Tier spins down inactive services after 15 minutes. It will spin up again on the next request, but the first request may take up to 30-50 seconds (boot + data fetch).
 - **Hard Refresh:** If you don't see data immediately, refresh the page.
