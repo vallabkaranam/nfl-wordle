@@ -17,6 +17,9 @@ export interface GuessResult {
     position: 'correct' | 'incorrect';
     jersey: 'correct' | 'higher' | 'lower' | 'incorrect';
   };
+  comparison: {
+     jersey: '↑' | '↓' | undefined;
+  }
 }
 
 const BACKEND_URL = 'http://localhost:8000';
@@ -64,8 +67,11 @@ export function checkGuess(target: Player, guess: Player): GuessResult {
         guess.jersey_number === target.jersey_number
           ? 'correct'
           : guess.jersey_number < target.jersey_number
-          ? 'higher'
-          : 'lower',
+          ? 'higher' // Guess is lower than target, so target is higher (UP arrow usually means "Go Higher")
+          : 'lower', // Guess is higher than target, so target is lower ("Go Lower")
     },
+    comparison: {
+        jersey: guess.jersey_number < target.jersey_number ? '↑' : guess.jersey_number > target.jersey_number ? '↓' : undefined
+    }
   };
 }

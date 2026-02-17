@@ -8,7 +8,7 @@
 ## 2. Backend Requirements (/backend)
 ### main.py
 - **CORS:** Enable `CORSMiddleware` to allow `http://localhost:3000`.
-- **Data Fetching:** Use `nflreadpy.load_rosters([2024])` to get active players.
+- **Data Fetching:** Use `nflreadpy.load_rosters([2025])` to get active players.
 - **Mapping:** Use the provided dictionary to map team abbreviations to 'Conference' and 'Division'.
 - **Endpoints:**
   - `GET /api/players`: Returns minified player list: `{name, team, pos, jersey, conf, div, headshot}`.

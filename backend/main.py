@@ -64,6 +64,7 @@ def load_data():
     print("Loading NFL 2025 roster data...")
     # Load 2025 rosters
     try:
+        # User requested 2025 primarily
         df = nfl.load_rosters([2025])
     except Exception as e:
         print(f"Error loading 2025 data, falling back to 2024 for dev if 2025 unavailable: {e}")
@@ -76,9 +77,10 @@ def load_data():
         print("Converting to pandas...")
         df = df.to_pandas()
     
-    # Filter for active players
-    if 'status' in df.columns:
-        df = df[df['status'] == 'ACT']
+    # Filter for active players - REMOVED per user feedback to include Injured/Reserve players
+    # "We want to get everyone (even if they're injured) as long as they're on the team"
+    # if 'status' in df.columns:
+    #    df = df[df['status'] == 'ACT']
     
     # Select cols: player_name, team, position, depth_chart_position, jersey_number, headshot_url
     needed_cols = ['full_name', 'team', 'position', 'jersey_number', 'headshot_url']
@@ -97,11 +99,11 @@ def load_data():
     for p in temp_players:
         team_info = TEAM_MAP.get(p.get('team'))
         if team_info:
-            # Rigorous jersey parsing
+            # Rigorous jersey parsing: FIX "0.0" issue
             try:
                 raw_jersey = p.get('jersey_number')
                 if pd.isna(raw_jersey):
-                    jersey_num = 0 # Default fallback
+                    jersey_num = 0 
                 else:
                     # Handle floats like 12.0 or strings "12"
                     jersey_num = int(float(raw_jersey))
@@ -129,18 +131,29 @@ def get_players(offense_only: bool = False):
     return players_db
 
 @app.get("/api/daily")
-def get_daily_player():
+def get_daily_player(offense_only: bool = False):
     if not players_db:
         return {"error": "No data loaded"}
     
+    # Filter candidates based on mode
+    candidates = players_db
+    if offense_only:
+        offensive_positions = ['QB', 'RB', 'WR', 'TE', 'FB']
+        candidates = [p for p in players_db if p['position'] in offensive_positions]
+        if not candidates:
+             # Fallback if no offensive players found (unlikely)
+             candidates = players_db
+
     # Deterministic daily player based on date
     today = date.today()
     seed_value = today.toordinal()
+    
+    # If offense_only mode, shift seed to pick a DIFFERENT player than the normal mode
+    # This ensures global consistency: Everyone on "Standard" gets Player A, everyone on "Offense" gets Player B.
+    if offense_only:
+        seed_value += 100
+
     random.seed(seed_value)
     
-    # Optional: ensure daily player is interesting (e.g. offense only?) 
-    # Blueprint doesn't specify, but safer to keep it random from all for now, 
-    # or obscure linemen might be hard. Let's stick to random from all for V2 spec compliance unless asked.
-    
-    daily_player = random.choice(players_db)
+    daily_player = random.choice(candidates)
     return daily_player
