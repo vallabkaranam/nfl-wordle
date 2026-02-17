@@ -4,13 +4,12 @@ import nflreadpy as nfl
 import pandas as pd
 from datetime import date
 import random
+import os
 
 app = FastAPI()
 
 # CORS
-origins = [
-    "http://localhost:3000",
-]
+origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 
 app.add_middleware(
     CORSMiddleware,
