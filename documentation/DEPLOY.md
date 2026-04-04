@@ -1,48 +1,51 @@
-# Deployment Guide (Render)
+# Deployment Guide
 
-This project is separated into two services: `frontend` (Next.js) and `backend` (FastAPI). Before deploying, ensure you have forked or pushed this repository to GitHub.
-If data fails to load initially, simply **refresh the page** after ~30 seconds.
+This project runs as two services:
 
-## 1. Deploy the Backend (FastAPI)
+- `frontend`: Next.js app
+- `backend`: FastAPI API
 
-1.  Log in to [Render](https://render.com/).
-2.  Click **New +** -> **Web Service**.
-3.  Connect your GitHub repository.
-4.  Configure the service as follows:
-    *   **Name:** `nfl-wordle-backend` (or similar)
-    *   **Root Directory:** `backend`
-    *   **Runtime:** Python 3
-    *   **Build Command:** `pip install -r requirements.txt`
-    *   **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-    *   **Instance Type:** Free (or Starter if needed)
-5.  **Environment Variables:**
-    *   `CORS_ORIGINS`: Set this to the URL of your frontend once deployed (e.g., `https://nfl-wordle.onrender.com`). During setup, you can leave it temporarily blank or use `*` (not recommended for prod) or `http://localhost:3000`. Ideally, deploy frontend first or come back to update this.
-    *   `PYTHON_VERSION`: `3.11.0` (Recommended)
+## Backend
 
-Once deployed, copy the **onrender.com URL** (e.g., `https://nfl-wordle-backend.onrender.com`). You will need this for the frontend.
+1. Deploy the `backend` directory as a Python web service.
+2. Install from `requirements.txt`.
+3. Start with:
 
-## 2. Deploy the Frontend (Next.js)
+```bash
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
 
-1.  Click **New +** -> **Web Service**.
-2.  Connect the same GitHub repository.
-3.  Configure the service as follows:
-    *   **Name:** `nfl-wordle-frontend` (or similar)
-    *   **Root Directory:** `frontend`
-    *   **Runtime:** Node
-    *   **Build Command:** `npm install && npm run build`
-    *   **Start Command:** `npm start`
-    *   **Instance Type:** Free
-4.  **Environment Variables:**
-    *   `NEXT_PUBLIC_API_URL`: Paste your backend URL here (e.g., `https://nfl-wordle-backend.onrender.com`). **Do not add a trailing slash.**
+Set these environment variables:
 
-## 3. Finalize Configuration
+- `CORS_ORIGINS=https://your-frontend-domain.com`
+- `PUZZLE_TIMEZONE=America/New_York`
+- `PYTHON_VERSION=3.11.0`
 
-1.  Go back to your **Backend Service** dashboard.
-2.  Update the `CORS_ORIGINS` environment variable to match your new **Frontend URL** (e.g., `https://nfl-wordle-frontend.onrender.com`).
-3.  Save changes. The backend will redeploy automatically.
+After deploy, verify:
 
-## Notes & Cold Start
+- `GET /api/health` returns `status`, `player_count`, and `puzzle_date`
 
-- **Data Loading:** The backend fetches NFL roster data on startup. The first deployment may take ~10-30 seconds to become healthy as it downloads and processes data. 
-- **Free Tier Limits:** Render Free Tier spins down inactive services after 15 minutes. It will spin up again on the next request, but the first request may take up to 30-50 seconds (boot + data fetch).
-- **Hard Refresh:** If you don't see data immediately, refresh the page.
+## Frontend
+
+1. Deploy the `frontend` directory as a Node service.
+2. Use Node `20.18.0` or newer.
+3. Build and start with:
+
+```bash
+npm install && npm run build
+npm start
+```
+
+Set these environment variables:
+
+- `NEXT_PUBLIC_API_URL=https://your-backend-domain.com`
+- `NEXT_PUBLIC_SITE_URL=https://your-frontend-domain.com`
+
+## Launch Checklist
+
+- Backend `/api/health` is green
+- Frontend can load `/`, `/privacy`, and `/terms`
+- `NEXT_PUBLIC_SITE_URL` is set so metadata, sitemap, and share links are correct
+- `CORS_ORIGINS` matches the frontend domain exactly
+- First-load latency is acceptable on your chosen hosting tier
+- Event logging is acceptable for your privacy posture before promotion

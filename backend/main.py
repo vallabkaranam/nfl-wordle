@@ -1,17 +1,32 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-import nfl_data_py as nfl
-import pandas as pd
-from datetime import date
-import random
-import os
-import json
-from pathlib import Path
+from __future__ import annotations
 
-app = FastAPI()
+import json
+import os
+from pathlib import Path
+from typing import Any
+from zoneinfo import ZoneInfo
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from core import (
+    get_candidates,
+    get_puzzle_date,
+    normalize_players,
+    select_daily_player,
+)
+import nfl_data_py as nfl
+
+app = FastAPI(title="Roster Riddle API")
+
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+CACHE_FILE = DATA_DIR / "players.json"
+EVENT_LOG_FILE = DATA_DIR / "events.log"
+PUZZLE_TIME_ZONE = os.getenv("PUZZLE_TIMEZONE", "America/New_York")
 
 # CORS
-origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",") if origin.strip()]
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,165 +37,99 @@ app.add_middleware(
 )
 
 # Global data cache
-players_db = []
+players_db: list[dict[str, Any]] = []
 
-TEAM_MAP = {
-    'ARI': {'conf': 'NFC', 'div': 'West'},
-    'ATL': {'conf': 'NFC', 'div': 'South'},
-    'BAL': {'conf': 'AFC', 'div': 'North'},
-    'BUF': {'conf': 'AFC', 'div': 'East'},
-    'CAR': {'conf': 'NFC', 'div': 'South'},
-    'CHI': {'conf': 'NFC', 'div': 'North'},
-    'CIN': {'conf': 'AFC', 'div': 'North'},
-    'CLE': {'conf': 'AFC', 'div': 'North'},
-    'DAL': {'conf': 'NFC', 'div': 'East'},
-    'DEN': {'conf': 'AFC', 'div': 'West'},
-    'DET': {'conf': 'NFC', 'div': 'North'},
-    'GB': {'conf': 'NFC', 'div': 'North'},
-    'HOU': {'conf': 'AFC', 'div': 'South'},
-    'IND': {'conf': 'AFC', 'div': 'South'},
-    'JAX': {'conf': 'AFC', 'div': 'South'},
-    'KC': {'conf': 'AFC', 'div': 'West'},
-    'LAC': {'conf': 'AFC', 'div': 'West'},
-    'LAR': {'conf': 'NFC', 'div': 'West'},
-    'LV': {'conf': 'AFC', 'div': 'West'},
-    'MIA': {'conf': 'AFC', 'div': 'East'},
-    'MIN': {'conf': 'NFC', 'div': 'North'},
-    'NE': {'conf': 'AFC', 'div': 'East'},
-    'NO': {'conf': 'NFC', 'div': 'South'},
-    'NYG': {'conf': 'NFC', 'div': 'East'},
-    'NYJ': {'conf': 'AFC', 'div': 'East'},
-    'PHI': {'conf': 'NFC', 'div': 'East'},
-    'PIT': {'conf': 'AFC', 'div': 'North'},
-    'SEA': {'conf': 'NFC', 'div': 'West'},
-    'SF': {'conf': 'NFC', 'div': 'West'},
-    'TB': {'conf': 'NFC', 'div': 'South'},
-    'TEN': {'conf': 'AFC', 'div': 'South'},
-    'WAS': {'conf': 'NFC', 'div': 'East'},
-}
+class EventPayload(BaseModel):
+    name: str
+    puzzle_date: str | None = None
+    mode: str | None = None
+    outcome: str | None = None
+    guess_count: int | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
+def write_event(payload: EventPayload) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with EVENT_LOG_FILE.open("a", encoding="utf-8") as event_log:
+        event_log.write(
+            json.dumps(
+                {
+                    "timestamp": datetime.now(ZoneInfo(PUZZLE_TIME_ZONE)).isoformat(),
+                    **payload.model_dump(),
+                }
+            )
+        )
+        event_log.write("\n")
 
-DATA_DIR = Path("data")
-CACHE_FILE = DATA_DIR / "players.json"
 
 @app.on_event("startup")
-def load_data():
+def load_data() -> None:
     global players_db
-    print("Loading NFL roster data...")
+    print("Loading roster data...")
 
-    # 1. Try Loading from Cache
     if CACHE_FILE.exists():
         try:
             print(f"Loading from cache: {CACHE_FILE}")
-            with open(CACHE_FILE, "r") as f:
-                players_db = json.load(f)
+            with CACHE_FILE.open("r", encoding="utf-8") as cache_file:
+                cached_records = json.load(cache_file)
+            players_db = normalize_players(cached_records)
             print(f"Loaded {len(players_db)} players from cache.")
             return
-        except Exception as e:
-            print(f"Error reading cache: {e}. Falling back to fetch.")
+        except Exception as exc:
+            print(f"Error reading cache: {exc}. Falling back to live fetch.")
 
-    # 2. Fetch if no cache
-    print("Cache miss. Fetching from nflreadpy...")
+    print("Cache miss. Fetching roster data...")
     try:
-        # User requested 2025 primarily
-        df = nfl.import_rosters([2025])
-    except Exception as e:
-        print(f"Error loading 2025 data, falling back to 2024 for dev if 2025 unavailable: {e}")
-        df = nfl.import_rosters([2024])
-    
-    print(f"Data Loaded. Type: {type(df)}")
-    
-    # Force conversion to pandas if likely Polars
-    if hasattr(df, "to_pandas"):
-        print("Converting to pandas...")
-        df = df.to_pandas()
-    
-    # Filter for active players - REMOVED per user feedback to include Injured/Reserve players
-    # "We want to get everyone (even if they're injured) as long as they're on the team"
-    # if 'status' in df.columns:
-    #    df = df[df['status'] == 'ACT']
-    
-    # Select cols: player_name, team, position, depth_chart_position, jersey_number, headshot_url
-    needed_cols = ['full_name', 'team', 'position', 'jersey_number', 'headshot_url']
-    # Ensure cols exist
-    existing_cols = [c for c in needed_cols if c in df.columns]
-    df = df[existing_cols]
-    
-    # Drop NAs
-    df = df.dropna()
-    
-    # Convert to list of dicts
-    temp_players = df.to_dict('records')
-    
-    cleaned_players = []
-    
-    for p in temp_players:
-        team_info = TEAM_MAP.get(p.get('team'))
-        if team_info:
-            # Rigorous jersey parsing: FIX "0.0" issue
-            try:
-                raw_jersey = p.get('jersey_number')
-                if pd.isna(raw_jersey):
-                    jersey_num = 0 
-                else:
-                    # Handle floats like 12.0 or strings "12"
-                    jersey_num = int(float(raw_jersey))
-            except (ValueError, TypeError):
-                jersey_num = 0
+        roster_df = nfl.import_rosters([2025])
+    except Exception as exc:
+        print(f"Error loading 2025 data, falling back to 2024: {exc}")
+        roster_df = nfl.import_rosters([2024])
 
-            cleaned_players.append({
-                'name': p.get('full_name'),
-                'team': p.get('team'),
-                'position': p.get('position'),
-                'jersey_number': jersey_num,
-                'headshot': p.get('headshot_url'),
-                'conf': team_info['conf'],
-                'div': team_info['div']
-            })
-            
-    players_db = cleaned_players
-    print(f"Loaded {len(players_db)} players from API.")
+    if hasattr(roster_df, "to_pandas"):
+        roster_df = roster_df.to_pandas()
 
-    # 3. Save to Cache
+    needed_cols = ["full_name", "team", "position", "jersey_number"]
+    existing_cols = [column for column in needed_cols if column in roster_df.columns]
+    roster_df = roster_df[existing_cols].dropna()
+
+    players_db = normalize_players(roster_df.to_dict("records"))
+    print(f"Loaded {len(players_db)} players from live data.")
+
     try:
         DATA_DIR.mkdir(parents=True, exist_ok=True)
-        with open(CACHE_FILE, "w") as f:
-            json.dump(players_db, f)
+        with CACHE_FILE.open("w", encoding="utf-8") as cache_file:
+            json.dump(players_db, cache_file)
         print(f"Saved cache to {CACHE_FILE}")
-    except Exception as e:
-        print(f"Failed to save cache: {e}")
+    except Exception as exc:
+        print(f"Failed to save cache: {exc}")
+
+
+@app.get("/api/health")
+def get_health() -> dict[str, Any]:
+    return {
+        "status": "ok" if players_db else "degraded",
+        "player_count": len(players_db),
+        "puzzle_date": get_puzzle_date(),
+        "timezone": PUZZLE_TIME_ZONE,
+    }
+
 
 @app.get("/api/players")
-def get_players(offense_only: bool = False):
-    if offense_only:
-        offensive_positions = ['QB', 'RB', 'WR', 'TE', 'FB']
-        return [p for p in players_db if p['position'] in offensive_positions]
-    return players_db
+def get_players(offense_only: bool = False) -> list[dict[str, Any]]:
+    candidates = get_candidates(players_db, offense_only)
+    if not candidates:
+        raise HTTPException(status_code=503, detail="Player data is not available yet.")
+    return candidates
+
 
 @app.get("/api/daily")
-def get_daily_player(offense_only: bool = False):
-    if not players_db:
-        return {"error": "No data loaded"}
-    
-    # Filter candidates based on mode
-    candidates = players_db
-    if offense_only:
-        offensive_positions = ['QB', 'RB', 'WR', 'TE', 'FB']
-        candidates = [p for p in players_db if p['position'] in offensive_positions]
-        if not candidates:
-             # Fallback if no offensive players found (unlikely)
-             candidates = players_db
+def get_daily_player(offense_only: bool = False) -> dict[str, Any]:
+    candidates = get_candidates(players_db, offense_only)
+    if not candidates:
+        raise HTTPException(status_code=503, detail="Player data is not available yet.")
+    return select_daily_player(candidates, offense_only, PUZZLE_TIME_ZONE)
 
-    # Deterministic daily player based on date
-    today = date.today()
-    seed_value = today.toordinal()
-    
-    # If offense_only mode, shift seed to pick a DIFFERENT player than the normal mode
-    # This ensures global consistency: Everyone on "Standard" gets Player A, everyone on "Offense" gets Player B.
-    if offense_only:
-        seed_value += 100
 
-    random.seed(seed_value)
-    
-    daily_player = random.choice(candidates)
-    return daily_player
+@app.post("/api/events")
+def post_event(payload: EventPayload) -> dict[str, str]:
+    write_event(payload)
+    return {"status": "accepted"}

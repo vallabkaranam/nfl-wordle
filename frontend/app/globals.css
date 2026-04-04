@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-brand-green: #6aaa64;
-  --color-brand-yellow: #c9b458;
+  --color-brand-green: #9fe870;
+  --color-brand-yellow: #f7d65b;
   --color-brand-gray: #3a3a3c;
   --color-background: #09090b; /* zinc-950 */
   --color-foreground: #ededed;
@@ -16,7 +16,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Oswald', 'Impact', sans-serif; /* Athletic font stack */
+  font-family: "Oswald", "Impact", sans-serif;
   
   /* Subtle Football Grid Pattern */
   background-image: 

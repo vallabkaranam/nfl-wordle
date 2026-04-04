@@ -13,7 +13,11 @@ interface GuessRowProps {
 export default function GuessRow({ result, index }: GuessRowProps) {
   const { player, status } = result;
 
-  const tiles = [
+  const tiles: Array<{
+    label: string;
+    status: "correct" | "incorrect" | "close";
+    arrow?: "higher" | "lower" | "correct" | "incorrect";
+  }> = [
     { label: player.conf, status: status.conf },
     { label: player.div, status: status.div },
     { label: player.team, status: status.team },
@@ -31,7 +35,7 @@ export default function GuessRow({ result, index }: GuessRowProps) {
         <FlipTile 
           key={i} 
           content={tile.label} 
-          status={tile.status as any} 
+          status={tile.status} 
           arrow={tile.arrow} 
           delay={index * 0.5 + i * 0.2} // Stagger based on row and col
         />

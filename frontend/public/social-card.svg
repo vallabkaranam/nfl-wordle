@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#09090B"/>
+  <rect x="30" y="30" width="1140" height="570" rx="28" fill="url(#paint0_linear)" stroke="#27272A" stroke-width="2"/>
+  <g opacity="0.25">
+    <path d="M90 120H1110" stroke="#3F3F46" stroke-width="2"/>
+    <path d="M90 210H1110" stroke="#3F3F46" stroke-width="2"/>
+    <path d="M90 300H1110" stroke="#3F3F46" stroke-width="2"/>
+    <path d="M90 390H1110" stroke="#3F3F46" stroke-width="2"/>
+    <path d="M90 480H1110" stroke="#3F3F46" stroke-width="2"/>
+    <path d="M240 90V540" stroke="#3F3F46" stroke-width="2"/>
+    <path d="M450 90V540" stroke="#3F3F46" stroke-width="2"/>
+    <path d="M660 90V540" stroke="#3F3F46" stroke-width="2"/>
+    <path d="M870 90V540" stroke="#3F3F46" stroke-width="2"/>
+  </g>
+  <text x="90" y="142" fill="#9FE870" font-family="Impact, Oswald, sans-serif" font-size="26" letter-spacing="8">DAILY PRO FOOTBALL PUZZLE</text>
+  <text x="90" y="250" fill="#FAFAFA" font-family="Impact, Oswald, sans-serif" font-size="120">ROSTER</text>
+  <text x="90" y="360" fill="#9FE870" font-family="Impact, Oswald, sans-serif" font-size="120">RIDDLE</text>
+  <text x="90" y="442" fill="#D4D4D8" font-family="Arial, sans-serif" font-size="34">Guess the player from roster clues, keep your streak, and share without spoilers.</text>
+  <g>
+    <rect x="90" y="492" width="74" height="74" rx="12" fill="#9FE870"/>
+    <rect x="182" y="492" width="74" height="74" rx="12" fill="#F7D65B"/>
+    <rect x="274" y="492" width="74" height="74" rx="12" fill="#18181B" stroke="#3F3F46"/>
+    <rect x="366" y="492" width="74" height="74" rx="12" fill="#18181B" stroke="#3F3F46"/>
+    <rect x="458" y="492" width="74" height="74" rx="12" fill="#18181B" stroke="#3F3F46"/>
+  </g>
+  <defs>
+    <linearGradient id="paint0_linear" x1="30" y1="30" x2="1170" y2="600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111827"/>
+      <stop offset="1" stop-color="#09090B"/>
+    </linearGradient>
+  </defs>
+</svg>

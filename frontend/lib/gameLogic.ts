@@ -3,7 +3,6 @@ export interface Player {
   team: string;
   position: string;
   jersey_number: number;
-  headshot: string;
   conf: string;
   div: string;
 }
@@ -23,6 +22,22 @@ export interface GuessResult {
 }
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+export const MAX_GUESSES = 5;
+export const OFFENSIVE_POSITIONS = ["QB", "RB", "WR", "TE", "FB"] as const;
+
+function isPlayer(value: unknown): value is Player {
+  if (!value || typeof value !== "object") return false;
+
+  const player = value as Record<string, unknown>;
+  return (
+    typeof player.name === "string" &&
+    typeof player.team === "string" &&
+    typeof player.position === "string" &&
+    typeof player.jersey_number === "number" &&
+    typeof player.conf === "string" &&
+    typeof player.div === "string"
+  );
+}
 
 export async function getDailyPlayer(offenseOnly: boolean = false): Promise<Player | null> {
   try {
@@ -32,7 +47,8 @@ export async function getDailyPlayer(offenseOnly: boolean = false): Promise<Play
     }
     const res = await fetch(url.toString(), { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch daily player');
-    return res.json();
+    const player = await res.json();
+    return isPlayer(player) ? player : null;
   } catch (err) {
     console.error(err);
     return null;
@@ -47,11 +63,16 @@ export async function getAllPlayers(offenseOnly: boolean = false): Promise<Playe
     }
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error('Failed to fetch players');
-    return res.json();
+    const players = await res.json();
+    return Array.isArray(players) ? players.filter(isPlayer) : [];
   } catch (err) {
     console.error(err);
     return [];
   }
+}
+
+export function getPlayerId(player: Player) {
+  return `${player.name}::${player.team}::${player.jersey_number}`;
 }
 
 export function checkGuess(target: Player, guess: Player): GuessResult {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Fuse from "fuse.js";
 import { Player } from "../lib/gameLogic";
 import { cn } from "../lib/utils";
@@ -13,20 +13,14 @@ interface SearchProps {
   toggleDisabled?: boolean;  // Disables the TOGGLE (locked after 1 guess)
   onFilterChange: (offenseOnly: boolean) => void;
   offenseOnly: boolean;
+  guessedIds: Set<string>;
 }
 
-export default function Search({ players, onGuess, disabled, toggleDisabled, onFilterChange, offenseOnly }: SearchProps) {
+export default function Search({ players, onGuess, disabled, toggleDisabled, onFilterChange, offenseOnly, guessedIds }: SearchProps) {
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // Hydration fix
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const fuse = useMemo(() => {
-    if (!mounted) return null;
     return new Fuse(players, {
       keys: [
         { name: "name", weight: 0.7 },
@@ -38,20 +32,22 @@ export default function Search({ players, onGuess, disabled, toggleDisabled, onF
       ignoreLocation: true, // Find match anywhere in string
       useExtendedSearch: true // Enable logical queries
     });
-  }, [players, mounted]);
+  }, [players]);
 
   const results = useMemo(() => {
     if (!query || !fuse) return [];
-    return fuse.search(query).map((r) => r.item).slice(0, 5);
-  }, [query, fuse]);
+    return fuse
+      .search(query)
+      .map((r) => r.item)
+      .filter((player) => !guessedIds.has(`${player.name}::${player.team}::${player.jersey_number}`))
+      .slice(0, 5);
+  }, [query, fuse, guessedIds]);
 
   const handleSelect = (player: Player) => {
     onGuess(player);
     setQuery("");
     setShowResults(false);
   };
-
-  if (!mounted) return <div className="h-16 w-full"></div>; // Placeholder to prevent layout shift
 
   return (
     <div className="relative w-full max-w-2xl mx-auto z-50">
@@ -67,14 +63,14 @@ export default function Search({ players, onGuess, disabled, toggleDisabled, onF
                 disabled={toggleDisabled}
                 onChange={(e) => !toggleDisabled && onFilterChange(e.target.checked)}
               />
-              <div className={cn("block w-10 h-6 rounded-full transition-colors", offenseOnly ? "bg-brand-green" : "bg-zinc-800 border border-zinc-700")}></div>
+              <div className={cn("block w-10 h-6 rounded-full transition-colors", offenseOnly ? "bg-emerald-400" : "bg-zinc-800 border border-zinc-700")}></div>
               <div className={cn("dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm", offenseOnly ? "transform translate-x-4" : "")}></div>
             </div>
          </label>
       </div>
 
       <div className="relative group">
-        <div className="absolute inset-0 bg-brand-green/20 blur-lg rounded-lg opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
+        <div className="absolute inset-0 bg-emerald-400/20 blur-lg rounded-lg opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
         <input
           type="text"
           value={query}
@@ -83,9 +79,14 @@ export default function Search({ players, onGuess, disabled, toggleDisabled, onF
             setShowResults(true);
           }}
           onFocus={() => setShowResults(true)}
-          placeholder="ENTER PLAYER NAME..."
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && results[0]) {
+              handleSelect(results[0]);
+            }
+          }}
+          placeholder="ENTER PLAYER NAME OR TEAM..."
           disabled={disabled}
-          className="relative w-full bg-zinc-950 border-2 border-zinc-800 text-white px-4 py-4 pl-12 rounded-xl focus:outline-none focus:border-brand-green focus:ring-0 uppercase font-bold tracking-wide text-lg shadow-2xl transition-all placeholder:text-zinc-600"
+          className="relative w-full bg-zinc-950 border-2 border-zinc-800 text-white px-4 py-4 pl-12 rounded-xl focus:outline-none focus:border-emerald-400 focus:ring-0 uppercase font-bold tracking-wide text-lg shadow-2xl transition-all placeholder:text-zinc-600"
         />
         <SearchIcon className="absolute left-4 top-5 text-zinc-500 w-5 h-5" />
       </div>
@@ -96,11 +97,18 @@ export default function Search({ players, onGuess, disabled, toggleDisabled, onF
             <li
               key={`${player.name}-${player.jersey_number}-${player.team}`}
               onClick={() => handleSelect(player)}
-              className="px-4 py-3 hover:bg-brand-green/20 cursor-pointer flex items-center justify-between transition-colors border-b border-zinc-800/50 last:border-0 group"
+              className="px-4 py-3 hover:bg-emerald-400/15 cursor-pointer flex items-center justify-between transition-colors border-b border-zinc-800/50 last:border-0 group"
             >
               <div className="flex items-center gap-4">
                 <div className="relative">
-                    <img src={player.headshot} alt={player.name} className="w-10 h-10 rounded-full bg-zinc-800 object-cover border border-zinc-700 group-hover:border-brand-green transition-colors" />
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400/80 to-cyan-400/60 text-zinc-950 font-black flex items-center justify-center border border-white/15">
+                      {player.name
+                        .split(" ")
+                        .map((part) => part[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </div>
                     <div className="absolute -bottom-1 -right-1 bg-zinc-950 text-[10px] font-bold px-1 rounded border border-zinc-700">{player.position}</div>
                 </div>
                 <div>
