@@ -432,7 +432,7 @@ export default function Game({
   };
 
   return (
-    <div className="w-full max-w-6xl flex flex-col items-center relative">
+    <div className="w-full max-w-[1320px] flex flex-col items-center relative">
       <section className="w-full rounded-[28px] border border-white/10 bg-slate-950/55 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-xl overflow-hidden mb-6">
         <div className="flex items-start justify-between gap-4 border-b border-white/8 px-5 py-5 sm:px-7">
           <div className="max-w-3xl">
@@ -455,8 +455,8 @@ export default function Game({
           </button>
         </div>
 
-        <div className="px-5 py-5 sm:px-7 sm:py-6">
-          <div className="flex flex-wrap justify-center gap-2 mb-4">
+        <div className="px-5 py-5 sm:px-7 sm:py-7">
+          <div className="flex flex-wrap justify-center gap-2 mb-5">
           <ModeTab label="Classic" active={currentConfig.variant === "daily-standard"} onClick={() => switchVariant("daily-standard")} />
           <ModeTab label="Fantasy" active={currentConfig.variant === "daily-fantasy"} onClick={() => switchVariant("daily-fantasy")} />
           {weeklyTarget && <ModeTab label="Weekly" active={currentConfig.variant === "weekly"} onClick={() => switchVariant("weekly")} />}
@@ -465,7 +465,7 @@ export default function Game({
           )}
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-5 text-sm text-slate-400">
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-6 text-sm text-slate-400">
             <span className="rounded-full bg-white/5 px-3 py-1 text-slate-200">{currentConfig.title}</span>
             <span>{currentConfig.puzzleKey}</span>
             <span>{MAX_GUESSES - guesses.length} guesses left</span>
@@ -488,15 +488,15 @@ export default function Game({
 
       <StatsPanel stats={stats} />
 
-      <div className="w-full grid lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-6">
-        <section className="rounded-[28px] border border-white/10 bg-slate-950/45 p-4 shadow-[0_18px_50px_rgba(8,15,30,0.28)] backdrop-blur-xl sm:p-5">
+      <div className="w-full grid lg:grid-cols-[minmax(0,2.3fr)_360px] gap-6">
+        <section className="rounded-[28px] border border-white/10 bg-slate-950/45 p-4 shadow-[0_18px_50px_rgba(8,15,30,0.28)] backdrop-blur-xl sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
               <p className="text-lg font-semibold text-white">Guess board</p>
               <p className="text-sm text-slate-400">Match conference, division, team, position, and jersey number.</p>
             </div>
           </div>
-          <div className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 w-full text-[11px] text-slate-400 font-medium text-center mb-3">
+          <div className="grid grid-cols-[1.65fr_repeat(5,minmax(0,1fr))] gap-2.5 w-full text-xs text-slate-400 font-medium text-center mb-3">
             <div className="text-left pl-2">Player</div>
             <div>Conf</div>
             <div>Div</div>
@@ -505,10 +505,10 @@ export default function Game({
             <div>#</div>
           </div>
 
-          <div className="w-full flex flex-col gap-3 min-h-[350px]">
+          <div className="w-full flex flex-col gap-3 min-h-[390px]">
             {guesses.map((guess) => (
-              <div key={getPlayerId(guess.player)} className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 items-center">
-                <div className="flex items-center gap-3 overflow-hidden bg-white/[0.045] p-2.5 rounded-2xl border border-white/8">
+              <div key={getPlayerId(guess.player)} className="grid grid-cols-[1.65fr_repeat(5,minmax(0,1fr))] gap-2.5 items-center">
+                <div className="flex items-center gap-3 overflow-hidden bg-white/[0.045] p-3 rounded-2xl border border-white/8 min-h-14">
                   <PlayerBadge player={guess.player} compact />
                   <div className="min-w-0 flex flex-col justify-center">
                     <p className="font-semibold text-sm text-white truncate leading-tight">{guess.player.name}</p>
@@ -530,10 +530,10 @@ export default function Game({
 
             {gameStatus === "playing" &&
               Array.from({ length: Math.max(0, MAX_GUESSES - guesses.length) }).map((_, index) => (
-                <div key={`empty-${index}`} className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 items-center opacity-55">
-                  <div className="h-12 bg-white/[0.03] rounded-2xl border border-white/8 border-dashed" />
+                <div key={`empty-${index}`} className="grid grid-cols-[1.65fr_repeat(5,minmax(0,1fr))] gap-2.5 items-center opacity-55">
+                  <div className="h-14 bg-white/[0.03] rounded-2xl border border-white/8 border-dashed" />
                   {Array.from({ length: 5 }).map((__, tileIndex) => (
-                    <div key={tileIndex} className="h-12 bg-white/[0.03] rounded-2xl border border-white/8 border-dashed" />
+                    <div key={tileIndex} className="h-14 bg-white/[0.03] rounded-2xl border border-white/8 border-dashed" />
                   ))}
                 </div>
               ))}
@@ -852,7 +852,7 @@ function StatsPanel({ stats }: { stats: PlayerStats }) {
 
 function StatCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-4 backdrop-blur-sm">
+    <div className="rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-4 backdrop-blur-sm min-h-[102px]">
       <div className="flex items-center gap-2 text-slate-300 text-sm font-medium">
         {icon}
         {label}
@@ -875,7 +875,7 @@ function Tile({ status, value, arrow }: { status: string; value: string; arrow?:
   return (
     <div
       className={cn(
-        "h-12 flex flex-col items-center justify-center rounded-2xl border text-center transition-all font-semibold text-sm shadow-sm relative overflow-hidden",
+        "h-14 flex flex-col items-center justify-center rounded-2xl border text-center transition-all font-semibold text-sm shadow-sm relative overflow-hidden",
         getColor(status)
       )}
     >

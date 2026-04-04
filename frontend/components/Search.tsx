@@ -51,7 +51,7 @@ export default function Search({ players, onGuess, disabled, guessedIds, label =
   const hasResults = showResults && results.length > 0;
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-2 px-1">
         <p className="text-sm text-slate-300 font-medium">{label}</p>
       </div>
