@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import confetti from "canvas-confetti";
-import { Check, Flame, Link2, Mail, Share2, Trophy, Users } from "lucide-react";
+import { Check, Flame, Link2, Mail, Share2, Sparkles, Trophy, Users } from "lucide-react";
 import {
   checkGuess,
   FANTASY_POSITIONS,
@@ -433,18 +433,18 @@ export default function Game({
 
   return (
     <div className="w-full max-w-[1320px] flex flex-col items-center relative">
-      <section className="w-full rounded-[28px] border border-white/10 bg-slate-950/55 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-xl overflow-hidden mb-6">
-        <div className="flex items-start justify-between gap-4 border-b border-white/8 px-5 py-5 sm:px-7">
+      <section className="w-full mb-8">
+        <div className="flex items-start justify-between gap-4 mb-5">
           <div className="max-w-3xl">
-            <p className="text-xs sm:text-sm font-medium tracking-[0.18em] text-emerald-300/90 uppercase">Daily pro football puzzle</p>
-            <h1 className="mt-2 text-4xl sm:text-5xl font-semibold tracking-tight text-white">
-              Roster <span className="text-emerald-400">Riddle</span>
+            <p className="text-[11px] sm:text-xs font-medium tracking-[0.22em] text-emerald-300/90 uppercase">Daily pro football puzzle</p>
+            <h1 className="mt-3 text-5xl sm:text-6xl leading-none tracking-tight text-white [font-family:var(--font-editorial)]">
+              Roster <span className="text-emerald-300">Riddle</span>
             </h1>
-            <p className="mt-3 text-base sm:text-lg leading-7 text-slate-300">{currentConfig.subtitle}</p>
+            <p className="mt-4 max-w-2xl text-base sm:text-lg leading-8 text-slate-300">{currentConfig.subtitle}</p>
           </div>
           <button
             onClick={() => setShowHelp(true)}
-            className="shrink-0 rounded-full border border-white/10 bg-white/5 p-3 text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+            className="mt-1 shrink-0 rounded-full border border-white/10 bg-white/5 p-3 text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
             aria-label="How to play"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -455,47 +455,56 @@ export default function Game({
           </button>
         </div>
 
-        <div className="px-5 py-5 sm:px-7 sm:py-7">
-          <div className="flex flex-wrap justify-center gap-2 mb-5">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
           <ModeTab label="Classic" active={currentConfig.variant === "daily-standard"} onClick={() => switchVariant("daily-standard")} />
           <ModeTab label="Fantasy" active={currentConfig.variant === "daily-fantasy"} onClick={() => switchVariant("daily-fantasy")} />
           {weeklyTarget && <ModeTab label="Weekly" active={currentConfig.variant === "weekly"} onClick={() => switchVariant("weekly")} />}
           {challengeTarget && (
             <ModeTab label="Challenge" active={currentConfig.variant === "challenge"} onClick={() => switchVariant("challenge")} />
           )}
-          </div>
+        </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-6 text-sm text-slate-400">
-            <span className="rounded-full bg-white/5 px-3 py-1 text-slate-200">{currentConfig.title}</span>
-            <span>{currentConfig.puzzleKey}</span>
-            <span>{MAX_GUESSES - guesses.length} guesses left</span>
-          </div>
-
-          {gameStatus === "playing" ? (
-            <Search players={currentConfig.players} onGuess={handleGuess} guessedIds={guessedIds} label={currentConfig.searchLabel} />
-          ) : (
-            <div className="flex flex-wrap justify-center gap-3">
-              <ActionButton onClick={handleShareResult} icon={shareStatus === "copied" ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}>
-                {shareStatus === "copied" ? "Copied" : "Share result"}
-              </ActionButton>
-              <ActionButton onClick={handleCopyChallengeLink} icon={<Link2 className="w-4 h-4" />}>
-                Create challenge
-              </ActionButton>
-            </div>
-          )}
+        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400">
+          <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-slate-200">{currentConfig.title}</span>
+          <span>{currentConfig.puzzleKey}</span>
+          <span>{MAX_GUESSES - guesses.length} guesses left</span>
         </div>
       </section>
 
-      <StatsPanel stats={stats} />
-
-      <div className="w-full grid lg:grid-cols-[minmax(0,2.3fr)_360px] gap-6">
-        <section className="rounded-[28px] border border-white/10 bg-slate-950/45 p-4 shadow-[0_18px_50px_rgba(8,15,30,0.28)] backdrop-blur-xl sm:p-6">
-          <div className="mb-4 flex items-center justify-between gap-4">
+      <div className="w-full grid xl:grid-cols-[minmax(0,1fr)_290px] gap-8 items-start">
+        <section className="rounded-[30px] border border-white/10 bg-slate-950/50 p-5 shadow-[0_24px_80px_rgba(8,15,30,0.34)] backdrop-blur-xl sm:p-7">
+          <div className="mb-5 flex items-start justify-between gap-4">
             <div>
-              <p className="text-lg font-semibold text-white">Guess board</p>
-              <p className="text-sm text-slate-400">Match conference, division, team, position, and jersey number.</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-emerald-300/80 font-medium">Puzzle board</p>
+              <p className="mt-2 text-slate-300 text-sm sm:text-base">Match conference, division, team, position, and jersey number.</p>
             </div>
+            {gameStatus !== "playing" && (
+              <div className="hidden sm:flex flex-wrap justify-end gap-3">
+                <ActionButton onClick={handleShareResult} icon={shareStatus === "copied" ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}>
+                  {shareStatus === "copied" ? "Copied" : "Share result"}
+                </ActionButton>
+                <ActionButton onClick={handleCopyChallengeLink} icon={<Link2 className="w-4 h-4" />}>
+                  Create challenge
+                </ActionButton>
+              </div>
+            )}
           </div>
+
+          <div className="mb-6">
+            {gameStatus === "playing" ? (
+              <Search players={currentConfig.players} onGuess={handleGuess} guessedIds={guessedIds} label={currentConfig.searchLabel} />
+            ) : (
+              <div className="flex flex-wrap gap-3 sm:hidden">
+                <ActionButton onClick={handleShareResult} icon={shareStatus === "copied" ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}>
+                  {shareStatus === "copied" ? "Copied" : "Share result"}
+                </ActionButton>
+                <ActionButton onClick={handleCopyChallengeLink} icon={<Link2 className="w-4 h-4" />}>
+                  Create challenge
+                </ActionButton>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-[1.65fr_repeat(5,minmax(0,1fr))] gap-2.5 w-full text-xs text-slate-400 font-medium text-center mb-3">
             <div className="text-left pl-2">Player</div>
             <div>Conf</div>
@@ -540,7 +549,7 @@ export default function Game({
           </div>
         </section>
 
-        <aside className="space-y-4">
+        <aside className="space-y-4 xl:sticky xl:top-6">
           <ResultCard
             gameStatus={gameStatus}
             player={currentConfig.target}
@@ -549,6 +558,30 @@ export default function Game({
             shareStatus={shareStatus}
           />
 
+          <div className="px-1 pt-1 text-sm text-slate-400">
+            <div className="flex flex-wrap gap-4">
+              <Link href="/privacy" className="hover:text-white transition-colors">
+                Privacy
+              </Link>
+              <Link href="/terms" className="hover:text-white transition-colors">
+                Terms
+              </Link>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <section className="w-full mt-10 grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-6">
+        <div className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 backdrop-blur-sm">
+          <div className="mb-4 flex items-center gap-2 text-slate-200">
+            <Sparkles className="w-4 h-4 text-emerald-300" />
+            <p className="font-semibold [font-family:var(--font-editorial)] text-2xl">Progress</p>
+          </div>
+          <p className="text-sm text-slate-400 mb-5">Your personal streaks and session history live here, but they stay secondary to the puzzle itself.</p>
+          <StatsPanel stats={stats} />
+        </div>
+
+        <div className="space-y-6">
           <LeaderboardCard
             entries={displayedLeaderboard}
             status={leaderboardStatus}
@@ -564,19 +597,8 @@ export default function Game({
             setEmail={setWaitlistEmail}
             onSubmit={handleWaitlistSubmit}
           />
-
-          <div className="px-1 pt-1 text-sm text-slate-400">
-            <div className="flex flex-wrap gap-4">
-              <Link href="/privacy" className="hover:text-white transition-colors">
-                Privacy
-              </Link>
-              <Link href="/terms" className="hover:text-white transition-colors">
-                Terms
-              </Link>
-            </div>
-          </div>
-        </aside>
-      </div>
+        </div>
+      </section>
 
       {showHelp && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/82 backdrop-blur-md p-4" onClick={() => setShowHelp(false)}>
@@ -658,7 +680,7 @@ function ResultCard({
   const isComplete = gameStatus !== "playing";
 
   return (
-    <div className="rounded-[28px] border border-white/10 bg-slate-950/52 p-5 backdrop-blur-xl">
+    <div className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 backdrop-blur-sm">
       <p className="font-semibold text-slate-200 mb-3">{isComplete ? "Round recap" : "Current round"}</p>
       {isComplete ? (
         <div className="flex items-center gap-3 mb-4">
@@ -671,7 +693,7 @@ function ResultCard({
           </div>
         </div>
       ) : (
-        <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.03] px-4 py-5 mb-4">
+        <div className="rounded-3xl border border-dashed border-white/10 bg-slate-950/45 px-4 py-5 mb-4">
           <p className="text-white font-semibold text-base">No result yet</p>
           <p className="text-slate-400 text-sm mt-2">This panel turns into your recap after the puzzle is solved or you run out of guesses.</p>
         </div>
@@ -711,7 +733,7 @@ function LeaderboardCard({
   const canSend = canSubmit && nickname.trim().length > 0 && status !== "loading";
 
   return (
-    <div className="rounded-[28px] border border-white/10 bg-slate-950/52 p-5 backdrop-blur-xl">
+    <div className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 backdrop-blur-sm">
       <div className="flex items-center gap-2 mb-3 text-slate-300">
         <Users className="w-4 h-4" />
         <p className="font-semibold">Leaderboard</p>
@@ -781,7 +803,7 @@ function WaitlistCard({
   const canSend = email.trim().length > 0 && status !== "saving";
 
   return (
-    <div className="rounded-[28px] border border-white/10 bg-slate-950/52 p-5 backdrop-blur-xl">
+    <div className="rounded-[28px] border border-white/10 bg-white/[0.035] p-5 backdrop-blur-sm">
       <div className="flex items-center gap-2 mb-3 text-slate-300">
         <Mail className="w-4 h-4" />
         <p className="font-semibold">Get updates</p>
@@ -841,7 +863,7 @@ function StatsPanel({ stats }: { stats: PlayerStats }) {
   const winRate = stats.gamesPlayed === 0 ? 0 : Math.round((stats.wins / stats.gamesPlayed) * 100);
 
   return (
-    <div className="w-full grid grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
+    <div className="w-full grid grid-cols-2 xl:grid-cols-4 gap-3">
       <StatCard icon={<Trophy className="w-4 h-4" />} label="Games" value={stats.gamesPlayed.toString()} />
       <StatCard icon={<Check className="w-4 h-4" />} label="Wins" value={`${winRate}%`} />
       <StatCard icon={<Flame className="w-4 h-4" />} label="Current Streak" value={stats.currentStreak.toString()} />
@@ -852,7 +874,7 @@ function StatsPanel({ stats }: { stats: PlayerStats }) {
 
 function StatCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-4 backdrop-blur-sm min-h-[102px]">
+    <div className="rounded-[24px] border border-white/10 bg-slate-950/45 px-4 py-4 min-h-[102px]">
       <div className="flex items-center gap-2 text-slate-300 text-sm font-medium">
         {icon}
         {label}

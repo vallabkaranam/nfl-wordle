@@ -15,6 +15,7 @@
   --surface-strong: rgba(15, 23, 42, 0.9);
   --border: rgba(148, 163, 184, 0.16);
   --muted: #a8b3c7;
+  --editorial: var(--font-editorial);
 }
 
 body {
@@ -26,6 +27,11 @@ body {
     radial-gradient(circle at top right, rgba(14, 165, 233, 0.1), transparent 24%),
     linear-gradient(180deg, #0b1020 0%, #0f172a 48%, #111827 100%);
   @apply antialiased relative min-h-screen;
+}
+
+::selection {
+  background: rgba(52, 211, 153, 0.35);
+  color: white;
 }
 
 a,
