@@ -23,7 +23,7 @@ import Search from "./Search";
 interface GameProps {
   standardDaily: Player;
   offenseDaily: Player;
-  weeklyTarget: Player;
+  weeklyTarget: Player | null;
   allPlayers: Player[];
   dailyKey: string;
   weeklyKey: string;
@@ -125,7 +125,7 @@ export default function Game({
       };
     }
 
-    if (activeVariant === "weekly") {
+    if (activeVariant === "weekly" && weeklyTarget) {
       return {
         variant: activeVariant,
         title: "Weekly Spotlight",
@@ -444,7 +444,7 @@ export default function Game({
         <div className="flex flex-wrap justify-center gap-2 mb-4">
           <ModeTab label="Daily" active={currentConfig.variant === "daily-standard"} onClick={() => switchVariant("daily-standard")} />
           <ModeTab label="Offense" active={currentConfig.variant === "daily-offense"} onClick={() => switchVariant("daily-offense")} />
-          <ModeTab label="Weekly" active={currentConfig.variant === "weekly"} onClick={() => switchVariant("weekly")} />
+          {weeklyTarget && <ModeTab label="Weekly" active={currentConfig.variant === "weekly"} onClick={() => switchVariant("weekly")} />}
           {challengeTarget && (
             <ModeTab label="Challenge" active={currentConfig.variant === "challenge"} onClick={() => switchVariant("challenge")} />
           )}
@@ -993,7 +993,7 @@ function getConfigForVariant(
   context: {
     standardDaily: Player;
     offenseDaily: Player;
-    weeklyTarget: Player;
+    weeklyTarget: Player | null;
     allPlayers: Player[];
     dailyKey: string;
     weeklyKey: string;
@@ -1022,7 +1022,7 @@ function getConfigForVariant(
     };
   }
 
-  if (variant === "weekly") {
+  if (variant === "weekly" && weeklyTarget) {
     return {
       variant,
       title: "Weekly Spotlight",

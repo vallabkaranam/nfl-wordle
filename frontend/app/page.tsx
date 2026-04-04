@@ -22,7 +22,7 @@ export default async function Home({
     getAllPlayers()
   ]);
 
-  if (!standardDaily || !offenseDaily || !weeklyTarget) {
+  if (!standardDaily || !offenseDaily) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
         <div className="text-center">
