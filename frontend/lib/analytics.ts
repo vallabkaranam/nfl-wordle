@@ -3,7 +3,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type AnalyticsEvent = {
   name: string;
   puzzle_date?: string;
-  mode?: "standard" | "offense";
+  mode?: string;
   outcome?: "won" | "lost";
   guess_count?: number;
   metadata?: Record<string, unknown>;

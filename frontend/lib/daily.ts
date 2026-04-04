@@ -16,3 +16,16 @@ export function getPreviousPuzzleDate(day: string) {
   parsed.setUTCDate(parsed.getUTCDate() - 1);
   return parsed.toISOString().slice(0, 10);
 }
+
+export function getWeeklyPuzzleKey(date = new Date()) {
+  const localized = new Date(date.toLocaleString("en-US", { timeZone: PUZZLE_TIME_ZONE }));
+  const dayNumber = (localized.getDay() + 6) % 7;
+  localized.setDate(localized.getDate() - dayNumber + 3);
+
+  const firstThursday = new Date(localized.getFullYear(), 0, 4);
+  const firstDayNumber = (firstThursday.getDay() + 6) % 7;
+  firstThursday.setDate(firstThursday.getDate() - firstDayNumber + 3);
+
+  const weekNumber = 1 + Math.round((localized.getTime() - firstThursday.getTime()) / 604800000);
+  return `${localized.getFullYear()}-W${String(weekNumber).padStart(2, "0")}`;
+}

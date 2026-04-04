@@ -50,6 +50,12 @@ def get_puzzle_date(timezone_name: str = PUZZLE_TIME_ZONE) -> str:
     return datetime.now(ZoneInfo(timezone_name)).date().isoformat()
 
 
+def get_weekly_puzzle_key(timezone_name: str = PUZZLE_TIME_ZONE) -> str:
+    current_date = datetime.now(ZoneInfo(timezone_name)).date()
+    iso_year, iso_week, _ = current_date.isocalendar()
+    return f"{iso_year}-W{iso_week:02d}"
+
+
 def normalize_player(record: dict[str, Any]) -> dict[str, Any] | None:
     team = record.get("team")
     team_info = TEAM_MAP.get(team)
@@ -128,3 +134,16 @@ def select_daily_player(
         seed_value += 100
 
     return random.Random(seed_value).choice(candidates)
+
+
+def select_weekly_player(
+    candidates: list[dict[str, Any]],
+    timezone_name: str = PUZZLE_TIME_ZONE,
+) -> dict[str, Any]:
+    if not candidates:
+        raise ValueError("No player data available")
+
+    weekly_key = get_weekly_puzzle_key(timezone_name)
+    year, week = weekly_key.split("-W")
+    seed_value = int(year) * 100 + int(week)
+    return random.Random(seed_value + 700).choice(candidates)

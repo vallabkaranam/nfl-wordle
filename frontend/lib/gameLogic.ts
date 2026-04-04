@@ -7,6 +7,22 @@ export interface Player {
   div: string;
 }
 
+export interface LeaderboardEntry {
+  name: string;
+  guess_count: number;
+  mode: string;
+  puzzle_key: string;
+  puzzle_type: string;
+  timestamp: string;
+}
+
+export interface LeaderboardResponse {
+  entries: LeaderboardEntry[];
+  mode: string;
+  puzzle_key: string;
+  puzzle_type: string;
+}
+
 export interface GuessResult {
   player: Player;
   status: {
@@ -69,6 +85,59 @@ export async function getAllPlayers(offenseOnly: boolean = false): Promise<Playe
     console.error(err);
     return [];
   }
+}
+
+export async function getWeeklyPlayer(): Promise<Player | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/weekly`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to fetch weekly player");
+    const player = await res.json();
+    return isPlayer(player) ? player : null;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function getLeaderboard(puzzleType: "daily" | "weekly", mode: "standard" | "offense" | "weekly", puzzleKey: string) {
+  const url = new URL(`${BACKEND_URL}/api/leaderboard`);
+  url.searchParams.set("puzzle_type", puzzleType);
+  url.searchParams.set("mode", mode);
+  url.searchParams.set("puzzle_key", puzzleKey);
+
+  const res = await fetch(url.toString(), { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch leaderboard");
+  return (await res.json()) as LeaderboardResponse;
+}
+
+export async function submitLeaderboardEntry(payload: {
+  name: string;
+  puzzle_type: "daily" | "weekly";
+  mode: "standard" | "offense" | "weekly";
+  puzzle_key: string;
+  guess_count: number;
+}) {
+  const res = await fetch(`${BACKEND_URL}/api/leaderboard`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Failed to submit leaderboard score");
+  return (await res.json()) as { status: string; entries: LeaderboardEntry[] };
+}
+
+export async function submitWaitlistEmail(payload: { email: string; source: string }) {
+  const res = await fetch(`${BACKEND_URL}/api/waitlist`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Failed to save email");
+  return (await res.json()) as { status: string; count: number };
 }
 
 export function getPlayerId(player: Player) {

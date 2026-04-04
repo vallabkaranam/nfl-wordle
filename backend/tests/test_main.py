@@ -2,9 +2,11 @@ import unittest
 
 from core import (
     OFFENSIVE_POSITIONS,
+    get_weekly_puzzle_key,
     normalize_player,
     normalize_players,
     select_daily_player,
+    select_weekly_player,
 )
 
 
@@ -63,6 +65,32 @@ class BackendSmokeTests(unittest.TestCase):
 
         self.assertEqual(first_pick, second_pick)
         self.assertIn(first_pick["position"], OFFENSIVE_POSITIONS)
+
+    def test_weekly_selection_is_deterministic(self) -> None:
+        sample_players = [
+            {
+                "name": "One Example",
+                "team": "NYJ",
+                "position": "QB",
+                "jersey_number": 8,
+                "conf": "AFC",
+                "div": "East",
+            },
+            {
+                "name": "Two Example",
+                "team": "BUF",
+                "position": "WR",
+                "jersey_number": 14,
+                "conf": "AFC",
+                "div": "East",
+            },
+        ]
+
+        first_pick = select_weekly_player(sample_players)
+        second_pick = select_weekly_player(sample_players)
+
+        self.assertEqual(first_pick, second_pick)
+        self.assertRegex(get_weekly_puzzle_key(), r"^\d{4}-W\d{2}$")
 
 
 if __name__ == "__main__":

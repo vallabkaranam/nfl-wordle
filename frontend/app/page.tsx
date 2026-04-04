@@ -1,18 +1,28 @@
 import Game from "../components/Game";
-import { getPuzzleDate } from "../lib/daily";
-import { getAllPlayers, getDailyPlayer } from "../lib/gameLogic";
+import { getPuzzleDate, getWeeklyPuzzleKey } from "../lib/daily";
+import { getAllPlayers, getDailyPlayer, getWeeklyPlayer } from "../lib/gameLogic";
 
 export const dynamic = 'force-dynamic';
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   const dailyKey = getPuzzleDate();
-  const [standardDaily, offenseDaily, allPlayers] = await Promise.all([
+  const weeklyKey = getWeeklyPuzzleKey();
+  const challenge = typeof resolvedSearchParams.challenge === "string" ? resolvedSearchParams.challenge : undefined;
+  const initialView = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : undefined;
+
+  const [standardDaily, offenseDaily, weeklyTarget, allPlayers] = await Promise.all([
     getDailyPlayer(false),
     getDailyPlayer(true),
+    getWeeklyPlayer(),
     getAllPlayers()
   ]);
 
-  if (!standardDaily || !offenseDaily) {
+  if (!standardDaily || !offenseDaily || !weeklyTarget) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
         <div className="text-center">
@@ -26,7 +36,16 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-zinc-950">
-      <Game standardDaily={standardDaily} offenseDaily={offenseDaily} allPlayers={allPlayers} dailyKey={dailyKey} />
+      <Game
+        standardDaily={standardDaily}
+        offenseDaily={offenseDaily}
+        weeklyTarget={weeklyTarget}
+        allPlayers={allPlayers}
+        dailyKey={dailyKey}
+        weeklyKey={weeklyKey}
+        challengeToken={challenge}
+        initialView={initialView}
+      />
     </main>
   );
 }
