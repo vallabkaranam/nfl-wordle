@@ -39,7 +39,7 @@ export interface GuessResult {
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 export const MAX_GUESSES = 5;
-export const OFFENSIVE_POSITIONS = ["QB", "RB", "WR", "TE", "FB"] as const;
+export const FANTASY_POSITIONS = ["QB", "RB", "WR", "TE"] as const;
 
 function isPlayer(value: unknown): value is Player {
   if (!value || typeof value !== "object") return false;
@@ -55,11 +55,11 @@ function isPlayer(value: unknown): value is Player {
   );
 }
 
-export async function getDailyPlayer(offenseOnly: boolean = false): Promise<Player | null> {
+export async function getDailyPlayer(fantasyOnly: boolean = false): Promise<Player | null> {
   try {
     const url = new URL(`${BACKEND_URL}/api/daily`);
-    if (offenseOnly) {
-      url.searchParams.set('offense_only', 'true');
+    if (fantasyOnly) {
+      url.searchParams.set('fantasy_only', 'true');
     }
     const res = await fetch(url.toString(), { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch daily player');
@@ -71,11 +71,11 @@ export async function getDailyPlayer(offenseOnly: boolean = false): Promise<Play
   }
 }
 
-export async function getAllPlayers(offenseOnly: boolean = false): Promise<Player[]> {
+export async function getAllPlayers(fantasyOnly: boolean = false): Promise<Player[]> {
   try {
     const url = new URL(`${BACKEND_URL}/api/players`);
-    if (offenseOnly) {
-      url.searchParams.set('offense_only', 'true');
+    if (fantasyOnly) {
+      url.searchParams.set('fantasy_only', 'true');
     }
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error('Failed to fetch players');
@@ -99,7 +99,7 @@ export async function getWeeklyPlayer(): Promise<Player | null> {
   }
 }
 
-export async function getLeaderboard(puzzleType: "daily" | "weekly", mode: "standard" | "offense" | "weekly", puzzleKey: string) {
+export async function getLeaderboard(puzzleType: "daily" | "weekly", mode: "standard" | "fantasy" | "weekly", puzzleKey: string) {
   const url = new URL(`${BACKEND_URL}/api/leaderboard`);
   url.searchParams.set("puzzle_type", puzzleType);
   url.searchParams.set("mode", mode);
@@ -113,7 +113,7 @@ export async function getLeaderboard(puzzleType: "daily" | "weekly", mode: "stan
 export async function submitLeaderboardEntry(payload: {
   name: string;
   puzzle_type: "daily" | "weekly";
-  mode: "standard" | "offense" | "weekly";
+  mode: "standard" | "fantasy" | "weekly";
   puzzle_key: string;
   guess_count: number;
 }) {

@@ -57,7 +57,7 @@ class EventPayload(BaseModel):
 class LeaderboardSubmission(BaseModel):
     name: str = Field(min_length=2, max_length=24)
     puzzle_type: str = Field(pattern="^(daily|weekly)$")
-    mode: str = Field(pattern="^(standard|offense|weekly)$")
+    mode: str = Field(pattern="^(standard|fantasy|offense|weekly)$")
     puzzle_key: str
     guess_count: int = Field(ge=1, le=5)
 
@@ -100,19 +100,28 @@ def write_event(payload: EventPayload) -> None:
 
 def get_leaderboard_entries(puzzle_type: str, mode: str, puzzle_key: str) -> list[dict[str, Any]]:
     entries = read_json_file(LEADERBOARD_FILE, [])
+    accepted_modes = {mode}
+    if mode == "fantasy":
+        accepted_modes.add("offense")
+    elif mode == "offense":
+        accepted_modes.add("fantasy")
+
     filtered_entries = [
         entry
         for entry in entries
-        if entry.get("puzzle_type") == puzzle_type and entry.get("mode") == mode and entry.get("puzzle_key") == puzzle_key
+        if entry.get("puzzle_type") == puzzle_type and entry.get("mode") in accepted_modes and entry.get("puzzle_key") == puzzle_key
     ]
     filtered_entries.sort(key=lambda entry: (entry.get("guess_count", 99), entry.get("timestamp", "")))
-    return filtered_entries[:10]
+    normalized_entries = [{**entry, "mode": "fantasy" if entry.get("mode") == "offense" else entry.get("mode")} for entry in filtered_entries]
+    return normalized_entries[:10]
 
 
 def save_leaderboard_entry(payload: LeaderboardSubmission) -> list[dict[str, Any]]:
     entries = read_json_file(LEADERBOARD_FILE, [])
+    normalized_mode = "fantasy" if payload.mode == "offense" else payload.mode
     new_entry = {
         **payload.model_dump(),
+        "mode": normalized_mode,
         "name": payload.name.strip(),
         "timestamp": datetime.now(ZoneInfo(PUZZLE_TIME_ZONE)).isoformat(),
     }
@@ -122,7 +131,7 @@ def save_leaderboard_entry(payload: LeaderboardSubmission) -> list[dict[str, Any
         for entry in entries
         if not (
             entry.get("puzzle_type") == payload.puzzle_type
-            and entry.get("mode") == payload.mode
+            and entry.get("mode") in {normalized_mode, "offense" if normalized_mode == "fantasy" else normalized_mode}
             and entry.get("puzzle_key") == payload.puzzle_key
             and entry.get("name", "").lower() == payload.name.strip().lower()
         )
@@ -132,7 +141,9 @@ def save_leaderboard_entry(payload: LeaderboardSubmission) -> list[dict[str, Any
     grouped_entries = [
         entry
         for entry in same_bucket
-        if entry.get("puzzle_type") == payload.puzzle_type and entry.get("mode") == payload.mode and entry.get("puzzle_key") == payload.puzzle_key
+        if entry.get("puzzle_type") == payload.puzzle_type
+        and entry.get("mode") in {normalized_mode, "offense" if normalized_mode == "fantasy" else normalized_mode}
+        and entry.get("puzzle_key") == payload.puzzle_key
     ]
     grouped_entries.sort(key=lambda entry: (entry.get("guess_count", 99), entry.get("timestamp", "")))
 
@@ -152,7 +163,7 @@ def save_leaderboard_entry(payload: LeaderboardSubmission) -> list[dict[str, Any
         for entry in same_bucket
         if not (
             entry.get("puzzle_type") == payload.puzzle_type
-            and entry.get("mode") == payload.mode
+            and entry.get("mode") in {normalized_mode, "offense" if normalized_mode == "fantasy" else normalized_mode}
             and entry.get("puzzle_key") == payload.puzzle_key
         )
     ]
@@ -232,19 +243,20 @@ def get_health() -> dict[str, Any]:
 
 
 @app.get("/api/players")
-def get_players(offense_only: bool = False) -> list[dict[str, Any]]:
-    candidates = get_candidates(players_db, offense_only)
+def get_players(fantasy_only: bool = False, offense_only: bool = False) -> list[dict[str, Any]]:
+    candidates = get_candidates(players_db, fantasy_only or offense_only)
     if not candidates:
         raise HTTPException(status_code=503, detail="Player data is not available yet.")
     return candidates
 
 
 @app.get("/api/daily")
-def get_daily_player(offense_only: bool = False) -> dict[str, Any]:
-    candidates = get_candidates(players_db, offense_only)
+def get_daily_player(fantasy_only: bool = False, offense_only: bool = False) -> dict[str, Any]:
+    resolved_fantasy_only = fantasy_only or offense_only
+    candidates = get_candidates(players_db, resolved_fantasy_only)
     if not candidates:
         raise HTTPException(status_code=503, detail="Player data is not available yet.")
-    return select_daily_player(candidates, offense_only, PUZZLE_TIME_ZONE)
+    return select_daily_player(candidates, resolved_fantasy_only, PUZZLE_TIME_ZONE)
 
 
 @app.get("/api/weekly")
@@ -258,6 +270,9 @@ def get_weekly_player() -> dict[str, Any]:
 def get_leaderboard(puzzle_type: str = "daily", mode: str = "standard", puzzle_key: str | None = None) -> dict[str, Any]:
     if puzzle_type not in {"daily", "weekly"}:
         raise HTTPException(status_code=400, detail="Invalid puzzle type.")
+
+    if mode == "offense":
+        mode = "fantasy"
 
     resolved_key = puzzle_key or (
         get_weekly_puzzle_key(PUZZLE_TIME_ZONE) if puzzle_type == "weekly" else get_puzzle_date(PUZZLE_TIME_ZONE)

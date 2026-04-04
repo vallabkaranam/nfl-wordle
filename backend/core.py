@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 
 PUZZLE_TIME_ZONE = "America/New_York"
-OFFENSIVE_POSITIONS = {"QB", "RB", "WR", "TE", "FB"}
+FANTASY_POSITIONS = {"QB", "RB", "WR", "TE"}
 
 TEAM_MAP = {
     "ARI": {"conf": "NFC", "div": "West"},
@@ -110,27 +110,27 @@ def normalize_players(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return cleaned_players
 
 
-def get_candidates(players: list[dict[str, Any]], offense_only: bool = False) -> list[dict[str, Any]]:
+def get_candidates(players: list[dict[str, Any]], fantasy_only: bool = False) -> list[dict[str, Any]]:
     if not players:
         return []
 
-    if not offense_only:
+    if not fantasy_only:
         return players
 
-    candidates = [player for player in players if player["position"] in OFFENSIVE_POSITIONS]
+    candidates = [player for player in players if player["position"] in FANTASY_POSITIONS]
     return candidates or players
 
 
 def select_daily_player(
     candidates: list[dict[str, Any]],
-    offense_only: bool = False,
+    fantasy_only: bool = False,
     timezone_name: str = PUZZLE_TIME_ZONE,
 ) -> dict[str, Any]:
     if not candidates:
         raise ValueError("No player data available")
 
     seed_value = int(get_puzzle_date(timezone_name).replace("-", ""))
-    if offense_only:
+    if fantasy_only:
         seed_value += 100
 
     return random.Random(seed_value).choice(candidates)

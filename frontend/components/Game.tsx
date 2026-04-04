@@ -6,12 +6,12 @@ import confetti from "canvas-confetti";
 import { Check, Flame, Link2, Mail, Share2, Trophy, Users } from "lucide-react";
 import {
   checkGuess,
+  FANTASY_POSITIONS,
   getLeaderboard,
   getPlayerId,
   GuessResult,
   LeaderboardEntry,
   MAX_GUESSES,
-  OFFENSIVE_POSITIONS,
   Player,
   submitLeaderboardEntry,
   submitWaitlistEmail,
@@ -22,7 +22,7 @@ import Search from "./Search";
 
 interface GameProps {
   standardDaily: Player;
-  offenseDaily: Player;
+  fantasyDaily: Player;
   weeklyTarget: Player | null;
   allPlayers: Player[];
   dailyKey: string;
@@ -32,7 +32,7 @@ interface GameProps {
 }
 
 type GameStatus = "playing" | "won" | "lost";
-type PuzzleVariant = "daily-standard" | "daily-offense" | "weekly" | "challenge";
+type PuzzleVariant = "daily-standard" | "daily-fantasy" | "weekly" | "challenge";
 type SavedSession = {
   guesses: string[];
   gameStatus: GameStatus;
@@ -60,7 +60,7 @@ type VariantConfig = {
   players: Player[];
   puzzleType: "daily" | "weekly" | "challenge";
   leaderboardType: "daily" | "weekly" | null;
-  leaderboardMode: "standard" | "offense" | "weekly" | null;
+  leaderboardMode: "standard" | "fantasy" | "weekly" | null;
   puzzleKey: string;
   allowsStats: boolean;
 };
@@ -79,7 +79,7 @@ const DEFAULT_STATS: PlayerStats = {
 
 export default function Game({
   standardDaily,
-  offenseDaily,
+  fantasyDaily,
   weeklyTarget,
   allPlayers,
   dailyKey,
@@ -105,21 +105,21 @@ export default function Game({
   const hasTrackedStart = useRef<string | null>(null);
 
   const currentConfig = useMemo<VariantConfig>(() => {
-    const offensivePlayers = allPlayers.filter((player) =>
-      OFFENSIVE_POSITIONS.includes(player.position as (typeof OFFENSIVE_POSITIONS)[number])
+    const fantasyPlayers = allPlayers.filter((player) =>
+      FANTASY_POSITIONS.includes(player.position as (typeof FANTASY_POSITIONS)[number])
     );
 
-    if (activeVariant === "daily-offense") {
+    if (activeVariant === "daily-fantasy") {
       return {
         variant: activeVariant,
-        title: "Daily Offense",
-        subtitle: "A sharper daily puzzle using only offensive skill players.",
-        searchLabel: "Search Offense",
-        target: offenseDaily,
-        players: offensivePlayers,
+        title: "Daily Fantasy",
+        subtitle: "A cleaner daily puzzle built from the fantasy-relevant core: QB, RB, WR, and TE.",
+        searchLabel: "Search Fantasy Pool",
+        target: fantasyDaily,
+        players: fantasyPlayers,
         puzzleType: "daily",
         leaderboardType: "daily",
-        leaderboardMode: "offense",
+        leaderboardMode: "fantasy",
         puzzleKey: dailyKey,
         allowsStats: true,
       };
@@ -159,9 +159,9 @@ export default function Game({
 
     return {
       variant: "daily-standard",
-      title: "Daily Standard",
-      subtitle: "The main daily puzzle across the full roster.",
-      searchLabel: "Search Active Roster",
+      title: "Daily Classic",
+      subtitle: "The full-roster daily puzzle, including defenders and the biggest non-fantasy stars.",
+      searchLabel: "Search Full Roster",
       target: standardDaily,
       players: allPlayers,
       puzzleType: "daily",
@@ -170,7 +170,7 @@ export default function Game({
       puzzleKey: dailyKey,
       allowsStats: true,
     };
-  }, [activeVariant, allPlayers, challengeTarget, challengeToken, dailyKey, offenseDaily, standardDaily, weeklyKey, weeklyTarget]);
+  }, [activeVariant, allPlayers, challengeTarget, challengeToken, dailyKey, fantasyDaily, standardDaily, weeklyKey, weeklyTarget]);
 
   const storageKey = `${STORAGE_KEY_PREFIX}:${currentConfig.variant}:${currentConfig.puzzleKey}`;
   const guessedIds = useMemo(() => new Set(guesses.map((guess) => getPlayerId(guess.player))), [guesses]);
@@ -257,7 +257,7 @@ export default function Game({
       challengeTarget,
       challengeToken,
       dailyKey,
-      offenseDaily,
+      fantasyDaily,
       standardDaily,
       weeklyKey,
       weeklyTarget,
@@ -448,8 +448,8 @@ export default function Game({
         </div>
 
         <div className="flex flex-wrap justify-center gap-2 mb-4">
-          <ModeTab label="Daily" active={currentConfig.variant === "daily-standard"} onClick={() => switchVariant("daily-standard")} />
-          <ModeTab label="Offense" active={currentConfig.variant === "daily-offense"} onClick={() => switchVariant("daily-offense")} />
+          <ModeTab label="Classic" active={currentConfig.variant === "daily-standard"} onClick={() => switchVariant("daily-standard")} />
+          <ModeTab label="Fantasy" active={currentConfig.variant === "daily-fantasy"} onClick={() => switchVariant("daily-fantasy")} />
           {weeklyTarget && <ModeTab label="Weekly" active={currentConfig.variant === "weekly"} onClick={() => switchVariant("weekly")} />}
           {challengeTarget && (
             <ModeTab label="Challenge" active={currentConfig.variant === "challenge"} onClick={() => switchVariant("challenge")} />
@@ -574,7 +574,7 @@ export default function Game({
             </button>
             <h2 className="text-2xl font-semibold text-white mb-4">How to play</h2>
             <div className="space-y-4 text-base text-slate-300">
-              <p>Use the tabs to switch between the main daily puzzle, the offense-only daily puzzle, the weekly spotlight, and any custom challenge link.</p>
+              <p>Use the tabs to switch between the full-roster classic puzzle, the fantasy-player daily puzzle, the weekly spotlight, and any custom challenge link.</p>
               <p>Green means exact, yellow means close conference match, and arrows tell you whether the jersey number should be higher or lower.</p>
               <p>Win in fewer guesses to post a better leaderboard score. Weekly mode uses the same featured player all week so sharing and competing is easier.</p>
             </div>
@@ -1069,7 +1069,7 @@ async function copyText(value: string) {
 
 function getInitialVariant(initialView: string | undefined, challengeTarget: Player | null): PuzzleVariant {
   if (initialView === "weekly") return "weekly";
-  if (initialView === "offense") return "daily-offense";
+  if (initialView === "fantasy" || initialView === "offense") return "daily-fantasy";
   if (initialView === "challenge" && challengeTarget) return "challenge";
   return "daily-standard";
 }
@@ -1078,7 +1078,7 @@ function getConfigForVariant(
   variant: PuzzleVariant,
   context: {
     standardDaily: Player;
-    offenseDaily: Player;
+    fantasyDaily: Player;
     weeklyTarget: Player | null;
     allPlayers: Player[];
     dailyKey: string;
@@ -1087,22 +1087,22 @@ function getConfigForVariant(
     challengeToken?: string;
   }
 ) {
-  const { allPlayers, challengeTarget, challengeToken, dailyKey, offenseDaily, standardDaily, weeklyKey, weeklyTarget } = context;
-  const offensivePlayers = allPlayers.filter((player) =>
-    OFFENSIVE_POSITIONS.includes(player.position as (typeof OFFENSIVE_POSITIONS)[number])
+  const { allPlayers, challengeTarget, challengeToken, dailyKey, fantasyDaily, standardDaily, weeklyKey, weeklyTarget } = context;
+  const fantasyPlayers = allPlayers.filter((player) =>
+    FANTASY_POSITIONS.includes(player.position as (typeof FANTASY_POSITIONS)[number])
   );
 
-  if (variant === "daily-offense") {
+  if (variant === "daily-fantasy") {
     return {
       variant,
-      title: "Daily Offense",
-      subtitle: "A sharper daily puzzle using only offensive skill players.",
-      searchLabel: "Search Offense",
-      target: offenseDaily,
-      players: offensivePlayers,
+      title: "Daily Fantasy",
+      subtitle: "A cleaner daily puzzle built from the fantasy-relevant core: QB, RB, WR, and TE.",
+      searchLabel: "Search Fantasy Pool",
+      target: fantasyDaily,
+      players: fantasyPlayers,
       puzzleType: "daily" as const,
       leaderboardType: "daily" as const,
-      leaderboardMode: "offense" as const,
+      leaderboardMode: "fantasy" as const,
       puzzleKey: dailyKey,
       allowsStats: true,
     };
@@ -1142,9 +1142,9 @@ function getConfigForVariant(
 
   return {
     variant: "daily-standard" as const,
-    title: "Daily Standard",
-    subtitle: "The main daily puzzle across the full roster.",
-    searchLabel: "Search Active Roster",
+    title: "Daily Classic",
+    subtitle: "The full-roster daily puzzle, including defenders and the biggest non-fantasy stars.",
+    searchLabel: "Search Full Roster",
     target: standardDaily,
     players: allPlayers,
     puzzleType: "daily" as const,

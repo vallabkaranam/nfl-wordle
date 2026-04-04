@@ -15,14 +15,14 @@ export default async function Home({
   const challenge = typeof resolvedSearchParams.challenge === "string" ? resolvedSearchParams.challenge : undefined;
   const initialView = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : undefined;
 
-  const [standardDaily, offenseDaily, weeklyTarget, allPlayers] = await Promise.all([
+  const [standardDaily, fantasyDaily, weeklyTarget, allPlayers] = await Promise.all([
     getDailyPlayer(false),
     getDailyPlayer(true),
     getWeeklyPlayer(),
     getAllPlayers()
   ]);
 
-  if (!standardDaily || !offenseDaily) {
+  if (!standardDaily || !fantasyDaily) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
         <div className="text-center">
@@ -38,7 +38,7 @@ export default async function Home({
     <main className="flex min-h-screen flex-col items-center p-8 bg-zinc-950">
       <Game
         standardDaily={standardDaily}
-        offenseDaily={offenseDaily}
+        fantasyDaily={fantasyDaily}
         weeklyTarget={weeklyTarget}
         allPlayers={allPlayers}
         dailyKey={dailyKey}
