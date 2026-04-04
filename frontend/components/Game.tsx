@@ -425,10 +425,10 @@ export default function Game({
   };
 
   return (
-    <div className="w-full max-w-4xl flex flex-col items-center relative">
+    <div className="w-full max-w-5xl flex flex-col items-center relative px-4 sm:px-6">
       <button
         onClick={() => setShowHelp(true)}
-        className="absolute top-4 right-4 z-50 text-zinc-500 hover:text-white transition-colors"
+        className="absolute top-5 right-4 z-50 text-slate-400 hover:text-white transition-colors"
         aria-label="How to play"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
@@ -438,13 +438,13 @@ export default function Game({
         </svg>
       </button>
 
-      <div className="sticky top-0 z-40 w-full bg-zinc-950/90 backdrop-blur-md pt-4 pb-3 px-4 shadow-sm border-b border-zinc-900 mb-6">
-        <div className="mb-4 text-center">
-          <p className="text-[11px] font-black tracking-[0.35em] text-emerald-300/80 uppercase">Daily Pro Football Puzzle</p>
-          <h1 className="text-5xl font-extrabold tracking-tight text-white uppercase italic transform -skew-x-6">
+      <div className="sticky top-0 z-40 w-full bg-[#10131a]/92 backdrop-blur-xl pt-6 pb-4 px-4 shadow-sm border-b border-slate-800/70 mb-6">
+        <div className="mb-5 text-center">
+          <p className="text-sm font-medium tracking-[0.16em] text-emerald-300/90 uppercase">Daily pro football puzzle</p>
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-white">
             Roster <span className="text-emerald-400">Riddle</span>
           </h1>
-          <p className="text-zinc-500 font-bold tracking-widest text-xs uppercase mt-2">{currentConfig.subtitle}</p>
+          <p className="text-slate-300 text-base mt-2 max-w-2xl mx-auto">{currentConfig.subtitle}</p>
         </div>
 
         <div className="flex flex-wrap justify-center gap-2 mb-4">
@@ -456,9 +456,11 @@ export default function Game({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-4 text-[11px] uppercase tracking-[0.2em] text-zinc-500">
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-4 text-sm text-slate-400">
           <span>{currentConfig.title}</span>
+          <span className="text-slate-600">•</span>
           <span>{currentConfig.puzzleKey}</span>
+          <span className="text-slate-600">•</span>
           <span>{MAX_GUESSES - guesses.length} guesses left</span>
         </div>
 
@@ -478,9 +480,9 @@ export default function Game({
 
       <StatsPanel stats={stats} />
 
-      <div className="w-full grid lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-6 px-2">
+      <div className="w-full grid lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-6">
         <div>
-          <div className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 w-full text-[10px] text-zinc-500 uppercase font-black text-center tracking-widest mb-2">
+          <div className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 w-full text-[11px] text-slate-400 font-medium text-center mb-3">
             <div className="text-left pl-2">Player</div>
             <div>Conf</div>
             <div>Div</div>
@@ -492,12 +494,14 @@ export default function Game({
           <div className="w-full flex flex-col gap-3 min-h-[350px] pb-8">
             {guesses.map((guess) => (
               <div key={getPlayerId(guess.player)} className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 items-center">
-                <div className="flex items-center gap-3 overflow-hidden bg-zinc-900/60 p-2 rounded-lg border border-zinc-800">
+                <div className="flex items-center gap-3 overflow-hidden bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
                   <PlayerBadge player={guess.player} compact />
                   <div className="min-w-0 flex flex-col justify-center">
-                    <p className="font-bold text-xs text-white truncate leading-tight uppercase tracking-tight">{guess.player.name}</p>
-                    <div className="flex items-center gap-1 text-[10px] text-zinc-500 leading-none mt-0.5">
-                      <span className="font-black text-emerald-400">{guess.player.team}</span>
+                    <p className="font-semibold text-sm text-white truncate leading-tight">{guess.player.name}</p>
+                    <div className="flex items-center gap-1 text-xs text-slate-400 leading-none mt-1">
+                      <span className="font-semibold text-emerald-300">{guess.player.team}</span>
+                      <span>•</span>
+                      <span>#{guess.player.jersey_number}</span>
                     </div>
                   </div>
                 </div>
@@ -512,10 +516,10 @@ export default function Game({
 
             {gameStatus === "playing" &&
               Array.from({ length: Math.max(0, MAX_GUESSES - guesses.length) }).map((_, index) => (
-                <div key={`empty-${index}`} className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 items-center opacity-30">
-                  <div className="h-12 bg-zinc-800/50 rounded-lg border border-zinc-800/50 border-dashed" />
+                <div key={`empty-${index}`} className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 items-center opacity-50">
+                  <div className="h-12 bg-slate-900/50 rounded-xl border border-slate-800/70 border-dashed" />
                   {Array.from({ length: 5 }).map((__, tileIndex) => (
-                    <div key={tileIndex} className="h-12 bg-zinc-800/50 rounded-lg border border-zinc-800/50 border-dashed" />
+                    <div key={tileIndex} className="h-12 bg-slate-900/50 rounded-xl border border-slate-800/70 border-dashed" />
                   ))}
                 </div>
               ))}
@@ -547,10 +551,10 @@ export default function Game({
             onSubmit={handleWaitlistSubmit}
           />
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 text-sm text-zinc-300">
-            <p className="font-black uppercase tracking-[0.2em] text-[11px] text-zinc-500 mb-3">Launch Notes</p>
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 text-sm text-slate-300">
+            <p className="font-semibold text-slate-200 mb-2">About this build</p>
             <p>Roster Riddle now supports daily and weekly play, challenge links, a lightweight public leaderboard, and local streak tracking.</p>
-            <div className="mt-4 flex flex-wrap gap-4 text-[11px] uppercase tracking-[0.2em] text-zinc-500">
+            <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-400">
               <Link href="/privacy" className="hover:text-white transition-colors">
                 Privacy
               </Link>
@@ -564,12 +568,12 @@ export default function Game({
 
       {showHelp && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4" onClick={() => setShowHelp(false)}>
-          <div className="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl max-w-md w-full shadow-2xl relative" onClick={(event) => event.stopPropagation()}>
-            <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white">
+          <div className="bg-slate-950 border border-slate-700 p-6 rounded-3xl max-w-md w-full shadow-2xl relative" onClick={(event) => event.stopPropagation()}>
+            <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
               ✕
             </button>
-            <h2 className="text-2xl font-black text-white mb-4 uppercase italic">How to Play</h2>
-            <div className="space-y-4 text-sm text-zinc-300">
+            <h2 className="text-2xl font-semibold text-white mb-4">How to play</h2>
+            <div className="space-y-4 text-base text-slate-300">
               <p>Use the tabs to switch between the main daily puzzle, the offense-only daily puzzle, the weekly spotlight, and any custom challenge link.</p>
               <p>Green means exact, yellow means close conference match, and arrows tell you whether the jersey number should be higher or lower.</p>
               <p>Win in fewer guesses to post a better leaderboard score. Weekly mode uses the same featured player all week so sharing and competing is easier.</p>
@@ -586,8 +590,8 @@ function ModeTab({ label, active, onClick }: { label: string; active: boolean; o
     <button
       onClick={onClick}
       className={cn(
-        "px-4 py-2 rounded-full border text-xs font-black uppercase tracking-[0.2em] transition-colors",
-        active ? "bg-emerald-400 text-zinc-950 border-emerald-400" : "bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-zinc-500"
+        "px-4 py-2.5 rounded-full border text-sm font-medium transition-colors",
+        active ? "bg-emerald-400 text-zinc-950 border-emerald-400 shadow-[0_8px_24px_rgba(52,211,153,0.18)]" : "bg-slate-900/80 text-slate-200 border-slate-700 hover:border-slate-500"
       )}
     >
       {label}
@@ -612,8 +616,8 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex items-center gap-2 px-4 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-xs transition-colors",
-        disabled ? "bg-zinc-800 text-zinc-500 cursor-not-allowed" : "bg-emerald-400 text-zinc-950 hover:bg-emerald-300"
+        "inline-flex items-center gap-2 px-4 py-3 rounded-2xl font-semibold text-sm transition-colors",
+        disabled ? "bg-slate-800 text-slate-500 cursor-not-allowed" : "bg-emerald-400 text-zinc-950 hover:bg-emerald-300"
       )}
     >
       {icon}
@@ -638,26 +642,26 @@ function ResultCard({
   const isComplete = gameStatus !== "playing";
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <p className="font-black uppercase tracking-[0.2em] text-[11px] text-zinc-500 mb-3">{isComplete ? "Result" : "Puzzle Status"}</p>
+    <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+      <p className="font-semibold text-slate-200 mb-3">{isComplete ? "Round recap" : "Current round"}</p>
       {isComplete ? (
         <div className="flex items-center gap-3 mb-4">
           <PlayerBadge player={player} />
           <div>
-            <p className="text-white font-black uppercase">{player.name}</p>
-            <p className="text-zinc-400 text-sm">
+            <p className="text-white font-semibold text-lg">{player.name}</p>
+            <p className="text-slate-400 text-sm">
               {player.team} • #{player.jersey_number} • {player.position}
             </p>
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 px-4 py-5 mb-4">
-          <p className="text-white font-black uppercase text-sm">Target hidden until the round ends</p>
-          <p className="text-zinc-400 text-sm mt-2">Keep guessing to unlock the recap, sharing tools, and challenge link for this puzzle.</p>
+        <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/70 px-4 py-5 mb-4">
+          <p className="text-white font-semibold text-base">No result yet</p>
+          <p className="text-slate-400 text-sm mt-2">This panel turns into your recap after the puzzle is solved or you run out of guesses.</p>
         </div>
       )}
-      <p className="text-sm text-zinc-300 mb-4">
-        {isComplete ? "Today's target is shown here for your recap and challenge flow." : "Solve the current puzzle first. We hide the answer and disable sharing until the run is complete."}
+      <p className="text-sm text-slate-300 mb-4 leading-6">
+        {isComplete ? "Use your finished result to share or create a challenge link." : "Nothing is revealed during play. The answer and sharing actions only appear after the round ends."}
       </p>
       {isComplete && (
         <div className="flex flex-wrap gap-2">
@@ -691,10 +695,10 @@ function LeaderboardCard({
   const canSend = canSubmit && nickname.trim().length > 0 && status !== "loading";
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <div className="flex items-center gap-2 mb-3 text-zinc-500">
+    <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+      <div className="flex items-center gap-2 mb-3 text-slate-300">
         <Users className="w-4 h-4" />
-        <p className="font-black uppercase tracking-[0.2em] text-[11px]">Leaderboard</p>
+        <p className="font-semibold">Leaderboard</p>
       </div>
 
       {canSubmit && (
@@ -709,14 +713,14 @@ function LeaderboardCard({
             value={nickname}
             onChange={(event) => setNickname(event.target.value)}
             placeholder="Display Name"
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 px-3 py-3 text-sm text-white outline-none focus:border-emerald-400"
+            className="w-full rounded-2xl bg-slate-950 border border-slate-700 px-3 py-3 text-sm text-white outline-none focus:border-emerald-400"
           />
           <button
             type="submit"
             disabled={!canSend}
             className={cn(
-              "w-full rounded-xl py-3 text-xs font-black uppercase tracking-[0.2em] transition-colors",
-              canSend ? "bg-emerald-400 text-zinc-950 hover:bg-emerald-300" : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+              "w-full rounded-2xl py-3 text-sm font-semibold transition-colors",
+              canSend ? "bg-emerald-400 text-zinc-950 hover:bg-emerald-300" : "bg-slate-800 text-slate-500 cursor-not-allowed"
             )}
           >
             {status === "loading" ? "Saving..." : "Submit Score"}
@@ -726,19 +730,19 @@ function LeaderboardCard({
 
       {status === "error" && <p className="text-sm text-rose-400 mb-3">Leaderboard is unavailable right now.</p>}
       {status === "saved" && <p className="text-sm text-emerald-400 mb-3">Score saved.</p>}
-      {status === "loading" && <p className="text-sm text-zinc-500 mb-3">Loading leaderboard...</p>}
+      {status === "loading" && <p className="text-sm text-slate-400 mb-3">Loading leaderboard...</p>}
 
       <div className="space-y-2">
         {status === "loading" ? null : entries.length === 0 ? (
-          <p className="text-sm text-zinc-500">No scores yet. Be the first to post one.</p>
+          <p className="text-sm text-slate-400">No scores yet. Be the first to post one.</p>
         ) : (
           entries.map((entry, index) => (
-            <div key={`${entry.name}-${entry.timestamp}`} className="flex items-center justify-between rounded-xl border border-zinc-800 px-3 py-2">
+            <div key={`${entry.name}-${entry.timestamp}`} className="flex items-center justify-between rounded-2xl border border-slate-800 px-3 py-2.5 bg-slate-950/40">
               <div>
-                <p className="text-white font-bold text-sm">{index + 1}. {entry.name}</p>
-                <p className="text-zinc-500 text-xs uppercase tracking-[0.2em]">{entry.mode}</p>
+                <p className="text-white font-semibold text-sm">{index + 1}. {entry.name}</p>
+                <p className="text-slate-400 text-xs">{entry.mode}</p>
               </div>
-              <div className="text-emerald-400 font-black">{entry.guess_count}/{MAX_GUESSES}</div>
+              <div className="text-emerald-300 font-semibold">{entry.guess_count}/{MAX_GUESSES}</div>
             </div>
           ))
         )}
@@ -761,12 +765,12 @@ function WaitlistCard({
   const canSend = email.trim().length > 0 && status !== "saving";
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <div className="flex items-center gap-2 mb-3 text-zinc-500">
+    <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+      <div className="flex items-center gap-2 mb-3 text-slate-300">
         <Mail className="w-4 h-4" />
-        <p className="font-black uppercase tracking-[0.2em] text-[11px]">Get Updates</p>
+        <p className="font-semibold">Get updates</p>
       </div>
-      <p className="text-sm text-zinc-300 mb-3">Join the launch list for new puzzle modes, weekly events, and feature drops.</p>
+      <p className="text-sm text-slate-300 mb-3 leading-6">Join the launch list for new puzzle modes, weekly events, and feature drops.</p>
       <form
         className="space-y-2"
         onSubmit={(event) => {
@@ -778,14 +782,14 @@ function WaitlistCard({
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@example.com"
-          className="w-full rounded-xl bg-zinc-950 border border-zinc-800 px-3 py-3 text-sm text-white outline-none focus:border-emerald-400"
+          className="w-full rounded-2xl bg-slate-950 border border-slate-700 px-3 py-3 text-sm text-white outline-none focus:border-emerald-400"
         />
         <button
           type="submit"
           disabled={!canSend}
           className={cn(
-            "w-full rounded-xl py-3 text-xs font-black uppercase tracking-[0.2em] transition-colors",
-            canSend ? "bg-zinc-100 text-zinc-950 hover:bg-white" : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+            "w-full rounded-2xl py-3 text-sm font-semibold transition-colors",
+            canSend ? "bg-zinc-100 text-zinc-950 hover:bg-white" : "bg-slate-800 text-slate-500 cursor-not-allowed"
           )}
         >
           {status === "saving" ? "Saving..." : status === "saved" ? "Saved" : "Join Waitlist"}
@@ -821,7 +825,7 @@ function StatsPanel({ stats }: { stats: PlayerStats }) {
   const winRate = stats.gamesPlayed === 0 ? 0 : Math.round((stats.wins / stats.gamesPlayed) * 100);
 
   return (
-    <div className="w-full grid md:grid-cols-4 gap-3 px-2 mb-6">
+    <div className="w-full grid md:grid-cols-4 gap-3 mb-6">
       <StatCard icon={<Trophy className="w-4 h-4" />} label="Games" value={stats.gamesPlayed.toString()} />
       <StatCard icon={<Check className="w-4 h-4" />} label="Wins" value={`${winRate}%`} />
       <StatCard icon={<Flame className="w-4 h-4" />} label="Current Streak" value={stats.currentStreak.toString()} />
@@ -832,12 +836,12 @@ function StatsPanel({ stats }: { stats: PlayerStats }) {
 
 function StatCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-3">
-      <div className="flex items-center gap-2 text-zinc-500 uppercase tracking-[0.2em] text-[10px] font-black">
+    <div className="rounded-3xl border border-slate-800 bg-slate-900/70 px-4 py-4">
+      <div className="flex items-center gap-2 text-slate-300 text-sm font-medium">
         {icon}
         {label}
       </div>
-      <div className="mt-3 text-2xl font-black text-white">{value}</div>
+      <div className="mt-3 text-3xl font-semibold text-white">{value}</div>
     </div>
   );
 }
@@ -847,15 +851,15 @@ function Tile({ status, value, arrow }: { status: string; value: string; arrow?:
     if (currentStatus === "correct") return "bg-emerald-400 border-emerald-400 text-zinc-950";
     if (currentStatus === "close") return "bg-amber-300 border-amber-300 text-zinc-950";
     if (currentStatus === "incorrect" || currentStatus === "higher" || currentStatus === "lower") {
-      return "bg-zinc-900 border-zinc-700 text-white";
+      return "bg-slate-900 border-slate-700 text-white";
     }
-    return "bg-zinc-800 border-zinc-800 text-zinc-500";
+    return "bg-slate-900/80 border-slate-800 text-slate-500";
   };
 
   return (
     <div
       className={cn(
-        "h-12 flex flex-col items-center justify-center rounded-md border text-center transition-all font-bold text-xs uppercase shadow-sm relative overflow-hidden",
+        "h-12 flex flex-col items-center justify-center rounded-xl border text-center transition-all font-semibold text-sm shadow-sm relative overflow-hidden",
         getColor(status)
       )}
     >

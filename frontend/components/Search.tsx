@@ -51,11 +51,11 @@ export default function Search({ players, onGuess, disabled, guessedIds, label =
   return (
     <div className="relative w-full max-w-2xl mx-auto z-50">
       <div className="flex items-center justify-between mb-2 px-1">
-        <p className="text-xs text-zinc-500 uppercase font-black tracking-widest">{label}</p>
+        <p className="text-sm text-slate-300 font-semibold">{label}</p>
       </div>
 
       <div className="relative group">
-        <div className="absolute inset-0 bg-emerald-400/20 blur-lg rounded-lg opacity-0 group-focus-within:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-emerald-400/10 blur-lg rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
         <input
           type="text"
           value={query}
@@ -69,20 +69,20 @@ export default function Search({ players, onGuess, disabled, guessedIds, label =
               handleSelect(results[0]);
             }
           }}
-          placeholder="ENTER PLAYER NAME OR TEAM..."
+          placeholder="Search by player, team, or position"
           disabled={disabled}
-          className="relative w-full bg-zinc-950 border-2 border-zinc-800 text-white px-4 py-4 pl-12 rounded-xl focus:outline-none focus:border-emerald-400 focus:ring-0 uppercase font-bold tracking-wide text-lg shadow-2xl transition-all placeholder:text-zinc-600"
+          className="relative w-full bg-slate-950/80 border border-slate-700 text-white px-4 py-4 pl-12 rounded-2xl focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 text-base shadow-xl transition-all placeholder:text-slate-400"
         />
-        <SearchIcon className="absolute left-4 top-5 text-zinc-500 w-5 h-5" />
+        <SearchIcon className="absolute left-4 top-5 text-slate-400 w-5 h-5" />
       </div>
 
       {showResults && results.length > 0 && (
-        <ul className="absolute w-full bg-zinc-900/95 backdrop-blur-xl border-x border-b border-zinc-700 rounded-b-xl overflow-hidden shadow-2xl max-h-80 overflow-y-auto top-[calc(100%-4px)] pt-2 z-10">
+        <ul className="absolute w-full bg-slate-950/95 backdrop-blur-xl border border-slate-700 rounded-2xl overflow-hidden shadow-2xl max-h-80 overflow-y-auto top-[calc(100%+8px)] z-10">
           {results.map((player) => (
             <li
               key={getPlayerId(player)}
               onClick={() => handleSelect(player)}
-              className="px-4 py-3 hover:bg-emerald-400/15 cursor-pointer flex items-center justify-between transition-colors border-b border-zinc-800/50 last:border-0 group"
+              className="px-4 py-3 hover:bg-emerald-400/10 cursor-pointer flex items-center justify-between transition-colors border-b border-slate-800/80 last:border-0 group"
             >
               <div className="flex items-center gap-4">
                 <div className="relative">
@@ -94,11 +94,11 @@ export default function Search({ players, onGuess, disabled, guessedIds, label =
                       .slice(0, 2)
                       .toUpperCase()}
                   </div>
-                  <div className="absolute -bottom-1 -right-1 bg-zinc-950 text-[10px] font-bold px-1 rounded border border-zinc-700">{player.position}</div>
+                  <div className="absolute -bottom-1 -right-1 bg-slate-950 text-[10px] font-semibold px-1.5 py-0.5 rounded-md border border-slate-700 text-slate-200">{player.position}</div>
                 </div>
                 <div>
-                  <p className="font-black text-base uppercase text-white leading-none mb-1">{player.name}</p>
-                  <p className="text-xs text-zinc-400 font-mono tracking-wider">
+                  <p className="font-semibold text-base text-white leading-none mb-1">{player.name}</p>
+                  <p className="text-sm text-slate-400">
                     {player.team} • #{player.jersey_number}
                   </p>
                 </div>
