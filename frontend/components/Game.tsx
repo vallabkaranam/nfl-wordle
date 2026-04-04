@@ -177,6 +177,13 @@ export default function Game({
   const canSubmitLeaderboard =
     currentConfig.leaderboardType !== null && currentConfig.leaderboardMode !== null && gameStatus === "won";
   const displayedLeaderboard = currentConfig.leaderboardType ? leaderboard : [];
+  const visibleModes = [
+    "the full-roster Classic puzzle",
+    "the Fantasy puzzle for QB, RB, WR, and TE",
+    weeklyTarget ? "the Weekly spotlight" : null,
+    challengeTarget ? "custom challenge links" : null,
+  ].filter((value): value is string => Boolean(value));
+  const visibleModesDescription = formatList(visibleModes);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -425,63 +432,70 @@ export default function Game({
   };
 
   return (
-    <div className="w-full max-w-5xl flex flex-col items-center relative px-4 sm:px-6">
-      <button
-        onClick={() => setShowHelp(true)}
-        className="absolute top-5 right-4 z-50 text-slate-400 hover:text-white transition-colors"
-        aria-label="How to play"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-          <path d="M12 17h.01" />
-        </svg>
-      </button>
-
-      <div className="sticky top-0 z-40 w-full bg-[#10131a]/92 backdrop-blur-xl pt-6 pb-4 px-4 shadow-sm border-b border-slate-800/70 mb-6">
-        <div className="mb-5 text-center">
-          <p className="text-sm font-medium tracking-[0.16em] text-emerald-300/90 uppercase">Daily pro football puzzle</p>
-          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-white">
-            Roster <span className="text-emerald-400">Riddle</span>
-          </h1>
-          <p className="text-slate-300 text-base mt-2 max-w-2xl mx-auto">{currentConfig.subtitle}</p>
+    <div className="w-full max-w-6xl flex flex-col items-center relative">
+      <section className="w-full rounded-[28px] border border-white/10 bg-slate-950/55 shadow-[0_30px_80px_rgba(8,15,30,0.45)] backdrop-blur-xl overflow-hidden mb-6">
+        <div className="flex items-start justify-between gap-4 border-b border-white/8 px-5 py-5 sm:px-7">
+          <div className="max-w-3xl">
+            <p className="text-xs sm:text-sm font-medium tracking-[0.18em] text-emerald-300/90 uppercase">Daily pro football puzzle</p>
+            <h1 className="mt-2 text-4xl sm:text-5xl font-semibold tracking-tight text-white">
+              Roster <span className="text-emerald-400">Riddle</span>
+            </h1>
+            <p className="mt-3 text-base sm:text-lg leading-7 text-slate-300">{currentConfig.subtitle}</p>
+          </div>
+          <button
+            onClick={() => setShowHelp(true)}
+            className="shrink-0 rounded-full border border-white/10 bg-white/5 p-3 text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+            aria-label="How to play"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <path d="M12 17h.01" />
+            </svg>
+          </button>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-2 mb-4">
+        <div className="px-5 py-5 sm:px-7 sm:py-6">
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
           <ModeTab label="Classic" active={currentConfig.variant === "daily-standard"} onClick={() => switchVariant("daily-standard")} />
           <ModeTab label="Fantasy" active={currentConfig.variant === "daily-fantasy"} onClick={() => switchVariant("daily-fantasy")} />
           {weeklyTarget && <ModeTab label="Weekly" active={currentConfig.variant === "weekly"} onClick={() => switchVariant("weekly")} />}
           {challengeTarget && (
             <ModeTab label="Challenge" active={currentConfig.variant === "challenge"} onClick={() => switchVariant("challenge")} />
           )}
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-4 text-sm text-slate-400">
-          <span>{currentConfig.title}</span>
-          <span className="text-slate-600">•</span>
-          <span>{currentConfig.puzzleKey}</span>
-          <span className="text-slate-600">•</span>
-          <span>{MAX_GUESSES - guesses.length} guesses left</span>
-        </div>
-
-        {gameStatus === "playing" ? (
-          <Search players={currentConfig.players} onGuess={handleGuess} guessedIds={guessedIds} label={currentConfig.searchLabel} />
-        ) : (
-          <div className="flex flex-wrap justify-center gap-3">
-            <ActionButton onClick={handleShareResult} icon={shareStatus === "copied" ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}>
-              {shareStatus === "copied" ? "Copied" : "Share Result"}
-            </ActionButton>
-            <ActionButton onClick={handleCopyChallengeLink} icon={<Link2 className="w-4 h-4" />}>
-              Challenge A Friend
-            </ActionButton>
           </div>
-        )}
-      </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-5 text-sm text-slate-400">
+            <span className="rounded-full bg-white/5 px-3 py-1 text-slate-200">{currentConfig.title}</span>
+            <span>{currentConfig.puzzleKey}</span>
+            <span>{MAX_GUESSES - guesses.length} guesses left</span>
+          </div>
+
+          {gameStatus === "playing" ? (
+            <Search players={currentConfig.players} onGuess={handleGuess} guessedIds={guessedIds} label={currentConfig.searchLabel} />
+          ) : (
+            <div className="flex flex-wrap justify-center gap-3">
+              <ActionButton onClick={handleShareResult} icon={shareStatus === "copied" ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}>
+                {shareStatus === "copied" ? "Copied" : "Share result"}
+              </ActionButton>
+              <ActionButton onClick={handleCopyChallengeLink} icon={<Link2 className="w-4 h-4" />}>
+                Create challenge
+              </ActionButton>
+            </div>
+          )}
+        </div>
+      </section>
 
       <StatsPanel stats={stats} />
 
       <div className="w-full grid lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-6">
-        <div>
+        <section className="rounded-[28px] border border-white/10 bg-slate-950/45 p-4 shadow-[0_18px_50px_rgba(8,15,30,0.28)] backdrop-blur-xl sm:p-5">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-lg font-semibold text-white">Guess board</p>
+              <p className="text-sm text-slate-400">Match conference, division, team, position, and jersey number.</p>
+            </div>
+          </div>
           <div className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 w-full text-[11px] text-slate-400 font-medium text-center mb-3">
             <div className="text-left pl-2">Player</div>
             <div>Conf</div>
@@ -491,10 +505,10 @@ export default function Game({
             <div>#</div>
           </div>
 
-          <div className="w-full flex flex-col gap-3 min-h-[350px] pb-8">
+          <div className="w-full flex flex-col gap-3 min-h-[350px]">
             {guesses.map((guess) => (
               <div key={getPlayerId(guess.player)} className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 items-center">
-                <div className="flex items-center gap-3 overflow-hidden bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
+                <div className="flex items-center gap-3 overflow-hidden bg-white/[0.045] p-2.5 rounded-2xl border border-white/8">
                   <PlayerBadge player={guess.player} compact />
                   <div className="min-w-0 flex flex-col justify-center">
                     <p className="font-semibold text-sm text-white truncate leading-tight">{guess.player.name}</p>
@@ -516,15 +530,15 @@ export default function Game({
 
             {gameStatus === "playing" &&
               Array.from({ length: Math.max(0, MAX_GUESSES - guesses.length) }).map((_, index) => (
-                <div key={`empty-${index}`} className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 items-center opacity-50">
-                  <div className="h-12 bg-slate-900/50 rounded-xl border border-slate-800/70 border-dashed" />
+                <div key={`empty-${index}`} className="grid grid-cols-[1.5fr_repeat(5,minmax(0,1fr))] gap-2 items-center opacity-55">
+                  <div className="h-12 bg-white/[0.03] rounded-2xl border border-white/8 border-dashed" />
                   {Array.from({ length: 5 }).map((__, tileIndex) => (
-                    <div key={tileIndex} className="h-12 bg-slate-900/50 rounded-xl border border-slate-800/70 border-dashed" />
+                    <div key={tileIndex} className="h-12 bg-white/[0.03] rounded-2xl border border-white/8 border-dashed" />
                   ))}
                 </div>
               ))}
           </div>
-        </div>
+        </section>
 
         <aside className="space-y-4">
           <ResultCard
@@ -551,10 +565,8 @@ export default function Game({
             onSubmit={handleWaitlistSubmit}
           />
 
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 text-sm text-slate-300">
-            <p className="font-semibold text-slate-200 mb-2">About this build</p>
-            <p>Roster Riddle now supports daily and weekly play, challenge links, a lightweight public leaderboard, and local streak tracking.</p>
-            <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-400">
+          <div className="px-1 pt-1 text-sm text-slate-400">
+            <div className="flex flex-wrap gap-4">
               <Link href="/privacy" className="hover:text-white transition-colors">
                 Privacy
               </Link>
@@ -567,16 +579,16 @@ export default function Game({
       </div>
 
       {showHelp && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4" onClick={() => setShowHelp(false)}>
-          <div className="bg-slate-950 border border-slate-700 p-6 rounded-3xl max-w-md w-full shadow-2xl relative" onClick={(event) => event.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/82 backdrop-blur-md p-4" onClick={() => setShowHelp(false)}>
+          <div className="bg-slate-950 border border-white/10 p-6 rounded-[28px] max-w-md w-full shadow-2xl relative" onClick={(event) => event.stopPropagation()}>
             <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
               ✕
             </button>
             <h2 className="text-2xl font-semibold text-white mb-4">How to play</h2>
             <div className="space-y-4 text-base text-slate-300">
-              <p>Use the tabs to switch between the full-roster classic puzzle, the fantasy-player daily puzzle, the weekly spotlight, and any custom challenge link.</p>
-              <p>Green means exact, yellow means close conference match, and arrows tell you whether the jersey number should be higher or lower.</p>
-              <p>Win in fewer guesses to post a better leaderboard score. Weekly mode uses the same featured player all week so sharing and competing is easier.</p>
+              <p>Use the tabs to move between {visibleModesDescription}.</p>
+              <p>Green means exact. Yellow means same conference but wrong division. Arrows tell you whether the jersey number should be higher or lower.</p>
+              <p>Finish in fewer guesses to place better on the leaderboard. Weekly mode keeps the same answer all week so friends can compare results more easily.</p>
             </div>
           </div>
         </div>
@@ -590,8 +602,10 @@ function ModeTab({ label, active, onClick }: { label: string; active: boolean; o
     <button
       onClick={onClick}
       className={cn(
-        "px-4 py-2.5 rounded-full border text-sm font-medium transition-colors",
-        active ? "bg-emerald-400 text-zinc-950 border-emerald-400 shadow-[0_8px_24px_rgba(52,211,153,0.18)]" : "bg-slate-900/80 text-slate-200 border-slate-700 hover:border-slate-500"
+        "px-4 py-2.5 rounded-full border text-sm font-medium transition-all",
+        active
+          ? "bg-emerald-400 text-zinc-950 border-emerald-400 shadow-[0_10px_26px_rgba(52,211,153,0.18)]"
+          : "bg-white/[0.04] text-slate-200 border-white/10 hover:border-white/20 hover:bg-white/[0.06]"
       )}
     >
       {label}
@@ -616,8 +630,10 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex items-center gap-2 px-4 py-3 rounded-2xl font-semibold text-sm transition-colors",
-        disabled ? "bg-slate-800 text-slate-500 cursor-not-allowed" : "bg-emerald-400 text-zinc-950 hover:bg-emerald-300"
+        "inline-flex items-center gap-2 px-4 py-3 rounded-full font-semibold text-sm transition-all",
+        disabled
+          ? "bg-white/[0.05] text-slate-500 cursor-not-allowed"
+          : "bg-emerald-400 text-zinc-950 hover:bg-emerald-300 shadow-[0_12px_30px_rgba(52,211,153,0.18)]"
       )}
     >
       {icon}
@@ -642,7 +658,7 @@ function ResultCard({
   const isComplete = gameStatus !== "playing";
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+    <div className="rounded-[28px] border border-white/10 bg-slate-950/52 p-5 backdrop-blur-xl">
       <p className="font-semibold text-slate-200 mb-3">{isComplete ? "Round recap" : "Current round"}</p>
       {isComplete ? (
         <div className="flex items-center gap-3 mb-4">
@@ -655,7 +671,7 @@ function ResultCard({
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/70 px-4 py-5 mb-4">
+        <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.03] px-4 py-5 mb-4">
           <p className="text-white font-semibold text-base">No result yet</p>
           <p className="text-slate-400 text-sm mt-2">This panel turns into your recap after the puzzle is solved or you run out of guesses.</p>
         </div>
@@ -695,7 +711,7 @@ function LeaderboardCard({
   const canSend = canSubmit && nickname.trim().length > 0 && status !== "loading";
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+    <div className="rounded-[28px] border border-white/10 bg-slate-950/52 p-5 backdrop-blur-xl">
       <div className="flex items-center gap-2 mb-3 text-slate-300">
         <Users className="w-4 h-4" />
         <p className="font-semibold">Leaderboard</p>
@@ -713,14 +729,14 @@ function LeaderboardCard({
             value={nickname}
             onChange={(event) => setNickname(event.target.value)}
             placeholder="Display Name"
-            className="w-full rounded-2xl bg-slate-950 border border-slate-700 px-3 py-3 text-sm text-white outline-none focus:border-emerald-400"
+            className="w-full rounded-2xl bg-white/[0.04] border border-white/10 px-3 py-3 text-sm text-white outline-none focus:border-emerald-400"
           />
           <button
             type="submit"
             disabled={!canSend}
             className={cn(
-              "w-full rounded-2xl py-3 text-sm font-semibold transition-colors",
-              canSend ? "bg-emerald-400 text-zinc-950 hover:bg-emerald-300" : "bg-slate-800 text-slate-500 cursor-not-allowed"
+              "w-full rounded-full py-3 text-sm font-semibold transition-colors",
+              canSend ? "bg-emerald-400 text-zinc-950 hover:bg-emerald-300" : "bg-white/[0.05] text-slate-500 cursor-not-allowed"
             )}
           >
             {status === "loading" ? "Saving..." : "Submit Score"}
@@ -737,7 +753,7 @@ function LeaderboardCard({
           <p className="text-sm text-slate-400">No scores yet. Be the first to post one.</p>
         ) : (
           entries.map((entry, index) => (
-            <div key={`${entry.name}-${entry.timestamp}`} className="flex items-center justify-between rounded-2xl border border-slate-800 px-3 py-2.5 bg-slate-950/40">
+            <div key={`${entry.name}-${entry.timestamp}`} className="flex items-center justify-between rounded-3xl border border-white/8 px-3 py-3 bg-white/[0.03]">
               <div>
                 <p className="text-white font-semibold text-sm">{index + 1}. {entry.name}</p>
                 <p className="text-slate-400 text-xs">{entry.mode}</p>
@@ -765,7 +781,7 @@ function WaitlistCard({
   const canSend = email.trim().length > 0 && status !== "saving";
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+    <div className="rounded-[28px] border border-white/10 bg-slate-950/52 p-5 backdrop-blur-xl">
       <div className="flex items-center gap-2 mb-3 text-slate-300">
         <Mail className="w-4 h-4" />
         <p className="font-semibold">Get updates</p>
@@ -782,14 +798,14 @@ function WaitlistCard({
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@example.com"
-          className="w-full rounded-2xl bg-slate-950 border border-slate-700 px-3 py-3 text-sm text-white outline-none focus:border-emerald-400"
+          className="w-full rounded-2xl bg-white/[0.04] border border-white/10 px-3 py-3 text-sm text-white outline-none focus:border-emerald-400"
         />
         <button
           type="submit"
           disabled={!canSend}
           className={cn(
-            "w-full rounded-2xl py-3 text-sm font-semibold transition-colors",
-            canSend ? "bg-zinc-100 text-zinc-950 hover:bg-white" : "bg-slate-800 text-slate-500 cursor-not-allowed"
+            "w-full rounded-full py-3 text-sm font-semibold transition-colors",
+            canSend ? "bg-zinc-100 text-zinc-950 hover:bg-white" : "bg-white/[0.05] text-slate-500 cursor-not-allowed"
           )}
         >
           {status === "saving" ? "Saving..." : status === "saved" ? "Saved" : "Join Waitlist"}
@@ -811,7 +827,7 @@ function PlayerBadge({ player, compact = false }: { player: Player; compact?: bo
   return (
     <div
       className={cn(
-        "rounded-full bg-gradient-to-br from-emerald-400/80 to-cyan-400/60 text-zinc-950 font-black flex items-center justify-center shrink-0 border border-white/15",
+        "rounded-full bg-gradient-to-br from-emerald-300 to-cyan-300 text-zinc-950 font-black flex items-center justify-center shrink-0 border border-white/15 shadow-[0_10px_24px_rgba(34,197,94,0.16)]",
         compact ? "w-10 h-10 text-xs" : "w-16 h-16 text-xl"
       )}
       aria-hidden="true"
@@ -825,7 +841,7 @@ function StatsPanel({ stats }: { stats: PlayerStats }) {
   const winRate = stats.gamesPlayed === 0 ? 0 : Math.round((stats.wins / stats.gamesPlayed) * 100);
 
   return (
-    <div className="w-full grid md:grid-cols-4 gap-3 mb-6">
+    <div className="w-full grid grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
       <StatCard icon={<Trophy className="w-4 h-4" />} label="Games" value={stats.gamesPlayed.toString()} />
       <StatCard icon={<Check className="w-4 h-4" />} label="Wins" value={`${winRate}%`} />
       <StatCard icon={<Flame className="w-4 h-4" />} label="Current Streak" value={stats.currentStreak.toString()} />
@@ -836,7 +852,7 @@ function StatsPanel({ stats }: { stats: PlayerStats }) {
 
 function StatCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/70 px-4 py-4">
+    <div className="rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-4 backdrop-blur-sm">
       <div className="flex items-center gap-2 text-slate-300 text-sm font-medium">
         {icon}
         {label}
@@ -851,15 +867,15 @@ function Tile({ status, value, arrow }: { status: string; value: string; arrow?:
     if (currentStatus === "correct") return "bg-emerald-400 border-emerald-400 text-zinc-950";
     if (currentStatus === "close") return "bg-amber-300 border-amber-300 text-zinc-950";
     if (currentStatus === "incorrect" || currentStatus === "higher" || currentStatus === "lower") {
-      return "bg-slate-900 border-slate-700 text-white";
+      return "bg-slate-900/90 border-white/10 text-white";
     }
-    return "bg-slate-900/80 border-slate-800 text-slate-500";
+    return "bg-white/[0.03] border-white/8 text-slate-500";
   };
 
   return (
     <div
       className={cn(
-        "h-12 flex flex-col items-center justify-center rounded-xl border text-center transition-all font-semibold text-sm shadow-sm relative overflow-hidden",
+        "h-12 flex flex-col items-center justify-center rounded-2xl border text-center transition-all font-semibold text-sm shadow-sm relative overflow-hidden",
         getColor(status)
       )}
     >
@@ -1039,6 +1055,12 @@ function decodeBase64(value: string) {
     return globalThis.atob(value);
   }
   throw new Error("Base64 decoding is unavailable.");
+}
+
+function formatList(items: string[]) {
+  if (items.length <= 1) return items[0] || "";
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
 }
 
 async function copyText(value: string) {

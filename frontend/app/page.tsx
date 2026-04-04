@@ -35,7 +35,7 @@ export default async function Home({
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8 bg-zinc-950">
+    <main className="flex min-h-screen flex-col items-center px-4 py-6 sm:px-6 sm:py-8">
       <Game
         standardDaily={standardDaily}
         fantasyDaily={fantasyDaily}

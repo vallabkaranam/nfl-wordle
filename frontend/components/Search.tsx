@@ -51,11 +51,11 @@ export default function Search({ players, onGuess, disabled, guessedIds, label =
   return (
     <div className="relative w-full max-w-2xl mx-auto z-50">
       <div className="flex items-center justify-between mb-2 px-1">
-        <p className="text-sm text-slate-300 font-semibold">{label}</p>
+        <p className="text-sm text-slate-300 font-medium">{label}</p>
       </div>
 
       <div className="relative group">
-        <div className="absolute inset-0 bg-emerald-400/10 blur-lg rounded-2xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-emerald-400/8 blur-xl rounded-[24px] opacity-0 group-focus-within:opacity-100 transition-opacity" />
         <input
           type="text"
           value={query}
@@ -71,18 +71,18 @@ export default function Search({ players, onGuess, disabled, guessedIds, label =
           }}
           placeholder="Search by player, team, or position"
           disabled={disabled}
-          className="relative w-full bg-slate-950/80 border border-slate-700 text-white px-4 py-4 pl-12 rounded-2xl focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 text-base shadow-xl transition-all placeholder:text-slate-400"
+          className="relative w-full bg-white/[0.05] border border-white/10 text-white px-4 py-4 pl-12 rounded-[24px] focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 text-base shadow-[0_18px_44px_rgba(8,15,30,0.18)] transition-all placeholder:text-slate-400"
         />
         <SearchIcon className="absolute left-4 top-5 text-slate-400 w-5 h-5" />
       </div>
 
       {showResults && results.length > 0 && (
-        <ul className="absolute w-full bg-slate-950/95 backdrop-blur-xl border border-slate-700 rounded-2xl overflow-hidden shadow-2xl max-h-80 overflow-y-auto top-[calc(100%+8px)] z-10">
+        <ul className="absolute w-full bg-slate-950/96 backdrop-blur-xl border border-white/10 rounded-[24px] overflow-hidden shadow-2xl max-h-80 overflow-y-auto top-[calc(100%+10px)] z-10">
           {results.map((player) => (
             <li
               key={getPlayerId(player)}
               onClick={() => handleSelect(player)}
-              className="px-4 py-3 hover:bg-emerald-400/10 cursor-pointer flex items-center justify-between transition-colors border-b border-slate-800/80 last:border-0 group"
+              className="px-4 py-3 hover:bg-white/[0.06] cursor-pointer flex items-center justify-between transition-colors border-b border-white/6 last:border-0 group"
             >
               <div className="flex items-center gap-4">
                 <div className="relative">
