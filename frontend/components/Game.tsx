@@ -339,13 +339,19 @@ export default function Game({
 
     try {
       if (navigator.share) {
-        await navigator.share({
-          title: "Roster Riddle",
-          text: shareText,
-          url: window.location.href,
-        });
+        try {
+          await navigator.share({
+            title: "Roster Riddle",
+            text: shareText,
+            url: window.location.href,
+          });
+        } catch (shareError) {
+          await copyText(shareText);
+          setShareStatus("copied");
+          console.warn("Native share failed, copied result instead.", shareError);
+        }
       } else {
-        await navigator.clipboard.writeText(shareText);
+        await copyText(shareText);
         setShareStatus("copied");
       }
       trackEvent({
@@ -366,7 +372,7 @@ export default function Game({
     const challengeUrl = `${baseUrl}/?view=challenge&challenge=${encodeURIComponent(token)}`;
 
     try {
-      await navigator.clipboard.writeText(challengeUrl);
+      await copyText(challengeUrl);
       setShareStatus("copied");
       trackEvent({
         name: "challenge_link_created",
@@ -589,11 +595,26 @@ function ModeTab({ label, active, onClick }: { label: string; active: boolean; o
   );
 }
 
-function ActionButton({ children, icon, onClick }: { children: ReactNode; icon: ReactNode; onClick: () => void }) {
+function ActionButton({
+  children,
+  icon,
+  onClick,
+  disabled = false,
+}: {
+  children: ReactNode;
+  icon: ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-400 text-zinc-950 font-black uppercase tracking-[0.2em] text-xs hover:bg-emerald-300 transition-colors"
+      disabled={disabled}
+      className={cn(
+        "inline-flex items-center gap-2 px-4 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-xs transition-colors",
+        disabled ? "bg-zinc-800 text-zinc-500 cursor-not-allowed" : "bg-emerald-400 text-zinc-950 hover:bg-emerald-300"
+      )}
     >
       {icon}
       {children}
@@ -614,29 +635,40 @@ function ResultCard({
   onChallenge: () => void;
   shareStatus: "idle" | "copied";
 }) {
+  const isComplete = gameStatus !== "playing";
+
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
-      <p className="font-black uppercase tracking-[0.2em] text-[11px] text-zinc-500 mb-3">Result</p>
-      <div className="flex items-center gap-3 mb-4">
-        <PlayerBadge player={player} />
-        <div>
-          <p className="text-white font-black uppercase">{player.name}</p>
-          <p className="text-zinc-400 text-sm">
-            {player.team} • #{player.jersey_number} • {player.position}
-          </p>
+      <p className="font-black uppercase tracking-[0.2em] text-[11px] text-zinc-500 mb-3">{isComplete ? "Result" : "Puzzle Status"}</p>
+      {isComplete ? (
+        <div className="flex items-center gap-3 mb-4">
+          <PlayerBadge player={player} />
+          <div>
+            <p className="text-white font-black uppercase">{player.name}</p>
+            <p className="text-zinc-400 text-sm">
+              {player.team} • #{player.jersey_number} • {player.position}
+            </p>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 px-4 py-5 mb-4">
+          <p className="text-white font-black uppercase text-sm">Target hidden until the round ends</p>
+          <p className="text-zinc-400 text-sm mt-2">Keep guessing to unlock the recap, sharing tools, and challenge link for this puzzle.</p>
+        </div>
+      )}
       <p className="text-sm text-zinc-300 mb-4">
-        {gameStatus === "playing" ? "Solve the current puzzle, then share your result or create a custom challenge link." : "Today's target is shown here for your recap and challenge flow."}
+        {isComplete ? "Today's target is shown here for your recap and challenge flow." : "Solve the current puzzle first. We hide the answer and disable sharing until the run is complete."}
       </p>
-      <div className="flex flex-wrap gap-2">
-        <ActionButton onClick={onShare} icon={shareStatus === "copied" ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}>
-          {shareStatus === "copied" ? "Copied" : "Share"}
-        </ActionButton>
-        <ActionButton onClick={onChallenge} icon={<Link2 className="w-4 h-4" />}>
-          Challenge
-        </ActionButton>
-      </div>
+      {isComplete && (
+        <div className="flex flex-wrap gap-2">
+          <ActionButton onClick={onShare} icon={shareStatus === "copied" ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}>
+            {shareStatus === "copied" ? "Copied" : "Share"}
+          </ActionButton>
+          <ActionButton onClick={onChallenge} icon={<Link2 className="w-4 h-4" />}>
+            Challenge
+          </ActionButton>
+        </div>
+      )}
     </div>
   );
 }
@@ -656,6 +688,8 @@ function LeaderboardCard({
   setNickname: (value: string) => void;
   onSubmit: () => void;
 }) {
+  const canSend = canSubmit && nickname.trim().length > 0 && status !== "loading";
+
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
       <div className="flex items-center gap-2 mb-3 text-zinc-500">
@@ -664,7 +698,13 @@ function LeaderboardCard({
       </div>
 
       {canSubmit && (
-        <div className="mb-4 space-y-2">
+        <form
+          className="mb-4 space-y-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (canSend) onSubmit();
+          }}
+        >
           <input
             value={nickname}
             onChange={(event) => setNickname(event.target.value)}
@@ -672,12 +712,16 @@ function LeaderboardCard({
             className="w-full rounded-xl bg-zinc-950 border border-zinc-800 px-3 py-3 text-sm text-white outline-none focus:border-emerald-400"
           />
           <button
-            onClick={onSubmit}
-            className="w-full rounded-xl bg-emerald-400 text-zinc-950 py-3 text-xs font-black uppercase tracking-[0.2em] hover:bg-emerald-300 transition-colors"
+            type="submit"
+            disabled={!canSend}
+            className={cn(
+              "w-full rounded-xl py-3 text-xs font-black uppercase tracking-[0.2em] transition-colors",
+              canSend ? "bg-emerald-400 text-zinc-950 hover:bg-emerald-300" : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+            )}
           >
-            Submit Score
+            {status === "loading" ? "Saving..." : "Submit Score"}
           </button>
-        </div>
+        </form>
       )}
 
       {status === "error" && <p className="text-sm text-rose-400 mb-3">Leaderboard is unavailable right now.</p>}
@@ -685,7 +729,7 @@ function LeaderboardCard({
       {status === "loading" && <p className="text-sm text-zinc-500 mb-3">Loading leaderboard...</p>}
 
       <div className="space-y-2">
-        {entries.length === 0 ? (
+        {status === "loading" ? null : entries.length === 0 ? (
           <p className="text-sm text-zinc-500">No scores yet. Be the first to post one.</p>
         ) : (
           entries.map((entry, index) => (
@@ -714,6 +758,8 @@ function WaitlistCard({
   setEmail: (value: string) => void;
   onSubmit: () => void;
 }) {
+  const canSend = email.trim().length > 0 && status !== "saving";
+
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4">
       <div className="flex items-center gap-2 mb-3 text-zinc-500">
@@ -721,7 +767,13 @@ function WaitlistCard({
         <p className="font-black uppercase tracking-[0.2em] text-[11px]">Get Updates</p>
       </div>
       <p className="text-sm text-zinc-300 mb-3">Join the launch list for new puzzle modes, weekly events, and feature drops.</p>
-      <div className="space-y-2">
+      <form
+        className="space-y-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (canSend) onSubmit();
+        }}
+      >
         <input
           value={email}
           onChange={(event) => setEmail(event.target.value)}
@@ -729,12 +781,16 @@ function WaitlistCard({
           className="w-full rounded-xl bg-zinc-950 border border-zinc-800 px-3 py-3 text-sm text-white outline-none focus:border-emerald-400"
         />
         <button
-          onClick={onSubmit}
-          className="w-full rounded-xl bg-zinc-100 text-zinc-950 py-3 text-xs font-black uppercase tracking-[0.2em] hover:bg-white transition-colors"
+          type="submit"
+          disabled={!canSend}
+          className={cn(
+            "w-full rounded-xl py-3 text-xs font-black uppercase tracking-[0.2em] transition-colors",
+            canSend ? "bg-zinc-100 text-zinc-950 hover:bg-white" : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+          )}
         >
           {status === "saving" ? "Saving..." : status === "saved" ? "Saved" : "Join Waitlist"}
         </button>
-      </div>
+      </form>
       {status === "error" && <p className="text-sm text-rose-400 mt-3">Could not save that email.</p>}
     </div>
   );
@@ -979,6 +1035,32 @@ function decodeBase64(value: string) {
     return globalThis.atob(value);
   }
   throw new Error("Base64 decoding is unavailable.");
+}
+
+async function copyText(value: string) {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  if (typeof document === "undefined") {
+    throw new Error("Clipboard access is unavailable.");
+  }
+
+  const helper = document.createElement("textarea");
+  helper.value = value;
+  helper.setAttribute("readonly", "");
+  helper.style.position = "absolute";
+  helper.style.left = "-9999px";
+  document.body.appendChild(helper);
+  helper.select();
+
+  const successful = document.execCommand("copy");
+  document.body.removeChild(helper);
+
+  if (!successful) {
+    throw new Error("Clipboard copy failed.");
+  }
 }
 
 function getInitialVariant(initialView: string | undefined, challengeTarget: Player | null): PuzzleVariant {
